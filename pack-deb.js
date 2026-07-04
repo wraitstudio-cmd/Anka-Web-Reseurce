@@ -8,34 +8,79 @@ const distDir = path.join(__dirname, 'dist');
 const srcUnpacked = path.join(distDir, 'linux-unpacked');
 const finalDebPath = path.join(distDir, `anka-web_${version}_amd64.deb`);
 
-console.log('🚀 Saf Node.js ile gerçek Debian paketi inşası başladı...');
-
+console.log('🚀 Gelişmiş Standartlarda Debian Paketi İnşası Başladı...');
 
 function createTarball(filesList) {
     let blocks = [];
+    let addedDirs = new Set();
 
-    for (const file of filesList) {
-        const size = file.content.length;
+    function addDirHeader(dirPath) {
+        if (!dirPath || dirPath === '.' || addedDirs.has(dirPath)) return;
+        const parent = path.dirname(dirPath).replace(/\\/g, '/');
+        if (parent && parent !== '.') addDirHeader(parent);
+
         const header = Buffer.alloc(512);
-
-
-        header.write(file.name, 0, 'utf8');
-
-        header.write(file.mode.toString(8).padStart(7, '0'), 100);
-
-        header.write('0000000', 108);
-        header.write('0000000', 116);
-
-        header.write(size.toString(8).padStart(11, '0'), 124);
-
+        header.write(dirPath + '/', 0, 'utf8'); 
+        header.write('0000755', 100); 
+        header.write('0000000', 108); 
+        header.write('0000000', 116); 
+        header.write('00000000000', 124); 
         header.write(Math.floor(Date.now() / 1000).toString(8).padStart(11, '0'), 136);
-
-        header.write('0', 156);
-
+        header.write('5', 156); 
         header.write('ustar  ', 257);
         header.write('root', 265);
         header.write('root', 297);
 
+        let checksum = 0;
+        for (let i = 0; i < 512; i++) checksum += (i >= 148 && i < 156) ? 32 : header[i];
+        header.write(checksum.toString(8).padStart(6, '0') + '\0 ', 148);
+
+        blocks.push(header);
+        addedDirs.add(dirPath);
+    }
+
+    for (const file of filesList) {
+        if (file.type === 'symlink') {
+            const dirName = path.dirname(file.name).replace(/\\/g, '/');
+            addDirHeader(dirName);
+
+            const header = Buffer.alloc(512);
+            header.write(file.name, 0, 'utf8');
+            header.write('0000777', 100);
+            header.write('0000000', 108);
+            header.write('0000000', 116);
+            header.write('00000000000', 124);
+            header.write(Math.floor(Date.now() / 1000).toString(8).padStart(11, '0'), 136);
+            header.write('2', 156); 
+            header.write(file.linkname, 157, 'utf8'); 
+            header.write('ustar  ', 257);
+            header.write('root', 265);
+            header.write('root', 297);
+
+            let checksum = 0;
+            for (let i = 0; i < 512; i++) checksum += (i >= 148 && i < 156) ? 32 : header[i];
+            header.write(checksum.toString(8).padStart(6, '0') + '\0 ', 148);
+
+            blocks.push(header);
+            continue;
+        }
+
+        const dirName = path.dirname(file.name).replace(/\\/g, '/');
+        addDirHeader(dirName);
+
+        const size = file.content.length;
+        const header = Buffer.alloc(512);
+
+        header.write(file.name, 0, 'utf8');
+        header.write(file.mode.toString(8).padStart(7, '0'), 100);
+        header.write('0000000', 108);
+        header.write('0000000', 116);
+        header.write(size.toString(8).padStart(11, '0'), 124);
+        header.write(Math.floor(Date.now() / 1000).toString(8).padStart(11, '0'), 136);
+        header.write('0', 156);
+        header.write('ustar  ', 257);
+        header.write('root', 265);
+        header.write('root', 297);
 
         let checksum = 0;
         for (let i = 0; i < 512; i++) checksum += (i >= 148 && i < 156) ? 32 : header[i];
@@ -44,18 +89,15 @@ function createTarball(filesList) {
         blocks.push(header);
         blocks.push(file.content);
 
-
         const remainder = size % 512;
         if (remainder !== 0) blocks.push(Buffer.alloc(512 - remainder));
     }
-
 
     blocks.push(Buffer.alloc(1024));
     return Buffer.concat(blocks);
 }
 
-
-function getAllFiles(dirPath, relativeTo) {
+function getAllFiles(dirPath, relativeTo, sizeObj) {
     let results = [];
     const list = fs.readdirSync(dirPath);
     list.forEach(file => {
@@ -64,10 +106,10 @@ function getAllFiles(dirPath, relativeTo) {
         const relPath = path.relative(relativeTo, filePath).replace(/\\/g, '/');
 
         if (stat.isDirectory()) {
-            results = results.concat(getAllFiles(filePath, relativeTo));
+            results = results.concat(getAllFiles(filePath, relativeTo, sizeObj));
         } else {
-
-            const isExe = file === 'anka-web';
+            sizeObj.total += stat.size;
+            const isExe = file === 'anka-web' || file.endsWith('.so') || file.includes('chrome-sandbox');
             results.push({
                 name: relPath,
                 content: fs.readFileSync(filePath),
@@ -78,10 +120,8 @@ function getAllFiles(dirPath, relativeTo) {
     return results;
 }
 
-
 function createArArchive(debianBinary, controlGz, dataGz) {
     const arr = [Buffer.from('!<arch>\n', 'ascii')];
-
     const files = [
         { name: 'debian-binary', data: debianBinary },
         { name: 'control.tar.gz', data: controlGz },
@@ -107,36 +147,24 @@ function createArArchive(debianBinary, controlGz, dataGz) {
 }
 
 try {
+    console.log('📝 Kontrol dosyaları ve dinamik boyutlar hesaplanıyor...');
+    
+    let sizeObj = { total: 0 };
+    const appFiles = getAllFiles(srcUnpacked, srcUnpacked, sizeObj);
+    const installedSizeKb = Math.ceil(sizeObj.total / 1024);
 
-    console.log('📝 Kontrol dosyaları hazırlanıyor...');
-    const controlContent = fs.readFileSync(path.join(__dirname, 'debian-control.txt'), 'utf8').replace(/\r\n/g, '\n').trim() + '\n';
-const postinstContent = `#!/bin/sh
+    let controlContent = fs.readFileSync(path.join(__dirname, 'debian-control.txt'), 'utf8').replace(/\r\n/g, '\n').trim();
+    if (!controlContent.includes('Installed-Size:')) {
+        controlContent += `\nInstalled-Size: ${installedSizeKb}`;
+    } else {
+        controlContent = controlContent.replace(/Installed-Size:\s*\d+/g, `Installed-Size: ${installedSizeKb}`);
+    }
+    controlContent += '\n';
+
+    const postinstContent = `#!/bin/sh
 set -e
-
-# Çalıştırılabilir dosyaya izin ver
+chmod 4755 /opt/anka-web/chrome-sandbox 2>/dev/null || true
 chmod +x /opt/anka-web/anka-web
-
-# Başlat menüsü kısayolunu ayarla ve izinlerini ver
-chown root:root /usr/share/applications/anka-web.desktop
-chmod 644 /usr/share/applications/anka-web.desktop
-
-# Giriş yapan tüm kullanıcıların masaüstüne kısayolu otomatik kopyala
-for user_dir in /home/*; do
-    if [ -d "$user_dir" ]; then
-        # Kullanıcının masaüstü klasörünü bul (Masaüstü veya Desktop olabilir)
-        for desktop_dir in "$user_dir/Masaüstü" "$user_dir/Desktop"; do
-            if [ -d "$desktop_dir" ]; then
-                cp /usr/share/applications/anka-web.desktop "$desktop_dir/"
-                # Dosya sahibini o kullanıcı yap ki tıklayınca izin hatası vermesin
-                username=$(basename "$user_dir")
-                chown "$username:$username" "$desktop_dir/anka-web.desktop"
-                chmod +x "$desktop_dir/anka-web.desktop"
-            fi
-        done
-    fi
-done
-
-# Linux masaüstü veritabanını yenile
 update-desktop-database -q
 exit 0
 `.replace(/\r\n/g, '\n');
@@ -147,20 +175,33 @@ exit 0
     ]);
     const controlGz = zlib.gzipSync(controlTar);
 
-
-    console.log('📦 Uygulama dosyaları paketleniyor (Bu biraz sürebilir)...');
+    console.log('📦 Uygulama katmanları inşa ediliyor...');
     let dataFiles = [];
+const iconPath = path.join(__dirname, 'anka-web.png');
+const desktopContent = fs.readFileSync(path.join(__dirname, 'anka-web.desktop'), 'utf8');
 
+dataFiles.push({
+    name: 'usr/share/applications/anka-web.desktop',
+    content: Buffer.from(desktopContent, 'utf8'),
+    mode: 0o644
+});
 
-    const desktopContent = fs.readFileSync(path.join(__dirname, 'anka-web.desktop'), 'utf8');
+dataFiles.push({
+    name: 'usr/bin/anka-web',
+    type: 'symlink',
+    linkname: '/opt/anka-web/anka-web'
+});
+
+if (fs.existsSync(iconPath)) {
     dataFiles.push({
-        name: 'usr/share/applications/anka-web.desktop',
-        content: Buffer.from(desktopContent, 'utf8'),
+        name: 'opt/anka-web/anka-web.png',
+        content: fs.readFileSync(iconPath),
         mode: 0o644
     });
+} else {
+    console.log('⚠️ Uyarı: anka-web.png dosyası ana dizinde bulunamadı, ikon pakete eklenemedi.');
+}
 
-
-    const appFiles = getAllFiles(srcUnpacked, srcUnpacked);
     appFiles.forEach(f => {
         dataFiles.push({
             name: 'opt/anka-web/' + f.name,
@@ -172,17 +213,15 @@ exit 0
     const dataTar = createTarball(dataFiles);
     const dataGz = zlib.gzipSync(dataTar);
 
-
-    console.log('⚡ Öz hakiki Debian formatında birleştiriliyor...');
+    console.log('⚡ Standart ar arşiv blokları sıkıştırılıyor...');
     const debianBinary = Buffer.from('2.0\n', 'utf8');
-
     const finalDebBuffer = createArArchive(debianBinary, controlGz, dataGz);
 
     if (fs.existsSync(finalDebPath)) fs.unlinkSync(finalDebPath);
     fs.writeFileSync(finalDebPath, finalDebBuffer);
 
-    console.log(`\n✨ SÜPER! %100 Orijinal Linux Uyumlu Paket Hazır:\n👉 dist/anka-web_${version}_amd64.deb`);
+    console.log(`\n✨ BAŞARILI! Hatalardan Arındırılmış Debian Paketi Hazır:\n👉 dist/anka-web_${version}_amd64.deb`);
 
 } catch (error) {
-    console.error('❌ Hata oluştu:', error);
+    console.error('❌ Derleme sırasında kritik hata:', error);
 }

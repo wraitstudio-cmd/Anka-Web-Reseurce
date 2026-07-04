@@ -19,21 +19,21 @@
 
 <div id="app-container">
     <div id="sidebar">
-    <img src="assets/icons/logo.png" class="logo" onclick="location.reload()">
-    <div style="flex:1"></div>
+        <img src="assets/icons/logo.png" class="logo" onclick="location.reload()">
+        <div style="flex:1"></div>
 
-    <div class="side-btn" onclick="togglePaintMenu()"><i>✏️</i><span>KALEM</span></div>
-    <div class="side-btn" onclick="toggleKeyboard()"><i>⌨️</i><span>KLAVYE</span></div>
-    <div class="side-btn" onclick="createNewTab('https://www.google.com')"><i>➕</i><span>SEKME</span></div>
-    <div class="side-btn" onclick="toggleSplitScreen()"><i>🌓</i><span>BÖL</span></div>
-    <div class="side-btn" onclick="openAISession()"><i>🤖</i><span>AI</span></div>
-    <div class="side-btn" onclick="toggleLimit()"><i>🔒</i><span>LİMİT</span></div>
+        <div class="side-btn" onclick="togglePaintMenu()"><i>✏️</i><span>KALEM</span></div>
+        <div class="side-btn" onclick="toggleKeyboard()"><i>⌨️</i><span>KLAVYE</span></div>
+        <div class="side-btn" onclick="createNewTab('https://www.google.com')"><i>➕</i><span>SEKME</span></div>
+        <div class="side-btn" onclick="toggleSplitScreen()"><i>🌓</i><span>BÖL</span></div>
+        <div class="side-btn" onclick="openAISession()"><i>🤖</i><span>AI</span></div>
+        <div class="side-btn" onclick="toggleLimit()"><i>🔒</i><span>LİMİT</span></div>
 
-    <div style="flex:1"></div>
+        <div style="flex:1"></div>
 
-    <div class="side-btn" onclick="toggleHelp()"><i>❓</i><span>YARDIM</span></div>
-    <div class="side-btn" onclick="toggleSettings()"><i>⚙️</i><span>AYARLAR</span></div>
-</div>
+        <div class="side-btn" onclick="toggleHelp()"><i>❓</i><span>YARDIM</span></div>
+        <div class="side-btn" onclick="toggleSettings()"><i>⚙️</i><span>AYARLAR</span></div>
+    </div>
 
     <div id="main-view">
         <div id="tab-bar"></div>
@@ -85,8 +85,6 @@
     </div>
 </div>
 
-
-
 <style>
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
@@ -130,7 +128,15 @@
         banner.style.display = 'flex';
         step1.style.display = 'block';
         step2.style.display = 'none';
-        stepError.style.display = 'none';        infoText.innerHTML = `<strong>Yeni Sürüm: ${data.version}</strong><br><small style="color: #a6adc8;">Otomatik yükleme hazırlandı.</small>`;
+        stepError.style.display = 'none';
+        infoText.innerHTML = `<strong>Yeni Sürüm: ${data.version}</strong><br><small style="color: #a6adc8;">Otomatik yükleme hazırlandı.</small>`;
+
+        updateBtn.style.display = '';
+        progressContainer.style.display = 'none';
+        laterBtn.style.display = '';
+        updateBtn.style.pointerEvents = '';
+        updateBtn.style.opacity = '';
+        updateBtn.innerText = 'Şimdi Güncelle';
 
         updateBtn.onclick = () => {
             updateBtn.style.pointerEvents = 'none';
@@ -188,51 +194,36 @@
     });
 </script>
 
-<style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>
-
-<style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-</style>
-
 <div id="notification-container" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 1000000; pointer-events: none;"></div>
 
-<div id="paint-menu">    <div id="paint-handle" style="cursor: move; background: var(--accent); margin: -15px -15px 10px -15px; padding: 8px; border-radius: 23px 23px 0 0; display: flex; justify-content: center; align-items: center; gap: 5px;">
+<div id="paint-menu">
+    <div id="paint-handle" style="cursor: move; background: var(--accent); margin: -15px -15px 10px -15px; padding: 8px; border-radius: 23px 23px 0 0; display: flex; justify-content: center; align-items: center; gap: 5px;">
         <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
         <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
         <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
     </div>
-=======
 
     <!-- Sayfa Modları -->
->>>>>>> origin/main
     <div class="tool-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 5px;">
         <div class="t-btn" onclick="setBoardMode('transparent')" title="Site">🌐</div>
         <div class="t-btn" onclick="setBoardMode('white')" title="Beyaz">⬜</div>
         <div class="t-btn" onclick="setBoardMode('lined')" title="Çizgili">📝</div>
         <div class="t-btn" onclick="setBoardMode('grid')" title="Kareli">🏁</div>
     </div>
-<<<<<<< HEAD    <div class="tool-row">
+
+    <div class="tool-row">
         <div class="t-btn active" id="t-pen" onclick="setTool('pen')">🖊️</div>
         <div class="t-btn" id="t-neon" onclick="setTool('neon')">✨</div>
         <div class="t-btn" id="t-eraser" onclick="setTool('eraser')">🧽</div>
     </div>
-=======
 
->>>>>>> origin/main
     <div class="tool-row">
         <div class="t-btn" onclick="toggleMathTool('ruler')">📏</div>
         <div class="t-btn" onclick="toggleMathTool('protractor')">📐</div>
         <div class="t-btn" onclick="undo()">↩️</div>
     </div>
-<<<<<<< HEAD    <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.3); padding:10px; border-radius:15px;">
+
+    <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.3); padding:10px; border-radius:15px;">
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="color" id="p-color" value="#2ecc71" style="width:40px; height:30px; border:none; background:none; cursor:pointer;">
             <input type="range" id="p-width" min="1" max="50" value="4" style="flex:1; accent-color:var(--accent);">
@@ -282,5 +273,6 @@
 <script src="src/help.js"></script>
 <script src="src/split-screen.js"></script>
 <script src="src/session-manager.js"></script>
-<script src="src/limiter.js"></script></body>
+<script src="src/limiter.js"></script>
+</body>
 </html>

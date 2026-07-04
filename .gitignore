@@ -1,9 +1,2 @@
 node_modules/
-<<<<<<< HEAD
 dist/
-=======
-dist/
-*.exe
-*.zip
-.env
->>>>>>> origin/main
