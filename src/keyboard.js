@@ -10,20 +10,10 @@ const keyMap = [
 
 function initKeys() {
     const kbContainer = document.getElementById('keyboard');
-<<<<<<< HEAD
     kbContainer.innerHTML = '';
-=======
-    kbContainer.innerHTML = ''; 
->>>>>>> origin/main
-
     keyMap.forEach(row => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'kb-row';
-<<<<<<< HEAD
-
-=======
-        
->>>>>>> origin/main
         row.forEach(key => {
             const btn = document.createElement('div');
             btn.className = 'kb-key';
@@ -34,11 +24,6 @@ function initKeys() {
             if (key === "⌫") btn.style.background = "#e74c3c";
             if (key === "⇧") btn.classList.toggle('active', isShift);
 
-<<<<<<< HEAD
-
-=======
-            // Mousedown kullanıyoruz ki input odağı (focus) kaybolmasın
->>>>>>> origin/main
             btn.onmousedown = (e) => {
                 e.preventDefault();
                 handleKeyPress(key);
@@ -52,13 +37,7 @@ function initKeys() {
 
 function handleKeyPress(k) {
     const activeEl = document.activeElement;
-<<<<<<< HEAD
 
-
-=======
-    
-    // 1. DURUM: Eğer odak senin kendi URL çubuğundaysa (veya kendi inputlarındaysa)
->>>>>>> origin/main
     if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
         if (k === '⌫') {
             activeEl.value = activeEl.value.slice(0, -1);
@@ -74,13 +53,7 @@ function handleKeyPress(k) {
             if(k === "İ" && !isShift) char = "i";
             activeEl.value += char;
         }
-<<<<<<< HEAD
     }
-
-=======
-    } 
-    // 2. DURUM: Eğer bir web sitesinin (webview) içindeki bir yere tıklanmışsa
->>>>>>> origin/main
     else {
         const wv = document.querySelector('webview.active');
         if (!wv) return;
@@ -96,11 +69,6 @@ function handleKeyPress(k) {
             if(k === "I" && !isShift) char = "ı";
             if(k === "İ" && !isShift) char = "i";
 
-<<<<<<< HEAD
-
-=======
-            // Webview içine karakteri gönder
->>>>>>> origin/main
             wv.sendInputEvent({
                 type: 'char',
                 keyCode: char
