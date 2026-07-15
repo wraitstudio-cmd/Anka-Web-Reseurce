@@ -4,7 +4,7 @@ const path = require('path');
 const { exec } = require('child_process');
 const https = require('https');
 
-const CURRENT_VERSION = "1.4.1";
+const CURRENT_VERSION = "1.4.2";
 const UPDATE_URL = "https://raw.githubusercontent.com/wraitstudio-cmd/Anka-Web/main/latest.yml";
 
 let isListenersRegistered = false;

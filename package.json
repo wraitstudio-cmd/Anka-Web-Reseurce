@@ -1,7 +1,7 @@
 {
   "name": "anka-web",
-  "version": "1.4.1",
-  "description": "Anka Web Browser",
+  "version": "1.4.2",
+  "description": "Anka Web",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -10,7 +10,7 @@
     "build:linux-dir": "npm run obfuscate && npx electron-builder --linux dir",
     "build:all": "npm run obfuscate && npx electron-builder --win && npx electron-builder --linux dir && node pack-deb.js"
   },
-  "author": "WraitGame <wraitstudio@gmail.com>",
+  "author": "WraitGame <wraitgame@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "electron": "^30.0.0",
@@ -19,7 +19,7 @@
   },
 "build": {
     "appId": "com.wraitgame.ankaweb",
-    "productName": "Anka Web Browser",
+    "productName": "Anka Web",
     "win": {
       "icon": "assets/icons/logo.ico",
       "target": [
@@ -29,17 +29,26 @@
 "nsis": {
   "oneClick": false,
   "allowToChangeInstallationDirectory": true,
+  "allowElevation": true,
+  "perMachine": true,
   "warningsAsErrors": false,
   "installerIcon": "assets/icons/logo.ico",
   "uninstallerIcon": "assets/icons/logo.ico",
-  "uninstallDisplayName": "Anka Web Browser Kaldır",
-  "language": "1055",
+  "installerHeaderIcon": "assets/icons/logo.ico",
+  "uninstallDisplayName": "Anka Web",
   "createDesktopShortcut": "always",
   "createStartMenuShortcut": true,
-  "shortcutName": "Anka Web Browser",
-  "allowElevation": true,
-  "perMachine": true
+  "shortcutName": "Anka Web",
+  "language": "1055",
+  "multiLanguageInstaller": false,
+  "displayLanguageSelector": false,
+  "deleteAppDataOnUninstall": true,
+  "runAfterFinish": true,
+  "packElevateHelper": true,
+  "differentialPackage": false,
+  "artifactName": "Anka_Web_${version}.${ext}"
 },
+
     "linux": {
       "icon": "assets/icons/256x256.png",
       "target": [

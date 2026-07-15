@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Anka Web
-Comment=Anka Web Browser
+Comment=Anka Web
 Exec=/opt/anka-web/anka-web --no-sandbox
 Icon=/opt/anka-web/anka-web.png
 Terminal=false
