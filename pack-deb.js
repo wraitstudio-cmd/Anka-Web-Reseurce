@@ -177,7 +177,7 @@ exit 0
 
     console.log('📦 Uygulama katmanları inşa ediliyor...');
     let dataFiles = [];
-const iconPath = path.join(__dirname, 'anka-web.png');
+const iconPath = path.join(__dirname, 'assets', 'icons', 'logo.png')
 const desktopContent = fs.readFileSync(path.join(__dirname, 'anka-web.desktop'), 'utf8');
 
 dataFiles.push({
@@ -194,12 +194,12 @@ dataFiles.push({
 
 if (fs.existsSync(iconPath)) {
     dataFiles.push({
-        name: 'opt/anka-web/anka-web.png',
+        name: 'assets/icons/logo.png',
         content: fs.readFileSync(iconPath),
         mode: 0o644
     });
 } else {
-    console.log('⚠️ Uyarı: anka-web.png dosyası ana dizinde bulunamadı, ikon pakete eklenemedi.');
+    console.log('⚠️ Uyarı: logo.png dosyası ana dizinde bulunamadı, ikon pakete eklenemedi.');
 }
 
     appFiles.forEach(f => {

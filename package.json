@@ -1,6 +1,6 @@
 {
   "name": "anka-web",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Anka Web",
   "main": "src/main.js",
   "scripts": {
@@ -31,7 +31,6 @@
   "allowToChangeInstallationDirectory": true,
   "allowElevation": true,
   "perMachine": true,
-  "warningsAsErrors": false,
   "installerIcon": "assets/icons/logo.ico",
   "uninstallerIcon": "assets/icons/logo.ico",
   "installerHeaderIcon": "assets/icons/logo.ico",
@@ -40,17 +39,13 @@
   "createStartMenuShortcut": true,
   "shortcutName": "Anka Web",
   "language": "1055",
-  "multiLanguageInstaller": false,
-  "displayLanguageSelector": false,
   "deleteAppDataOnUninstall": true,
   "runAfterFinish": true,
-  "packElevateHelper": true,
-  "differentialPackage": false,
   "artifactName": "Anka_Web_${version}.${ext}"
 },
 
     "linux": {
-      "icon": "assets/icons/256x256.png",
+      "icon": "assets/icons/logo.png",
       "target": [
         "dir"
       ]

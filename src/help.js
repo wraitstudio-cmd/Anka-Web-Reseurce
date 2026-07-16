@@ -33,6 +33,14 @@ function createHelpPanel() {
             </div>
         </div>
 
+        <div class="help-section" style="background: rgba(166, 227, 161, 0.05); padding: 20px; border-radius: 20px; border: 1px dashed #a6e3a1; margin-bottom: 25px;">
+            <h3 style="font-size: 17px; margin-top: 0; color: #a6e3a1; display:flex; align-items:center; gap:8px;">➕ Sekme Nasıl Açılır?</h3>
+            <p style="font-size: 14px; line-height: 1.5; color: #a6adc8; margin-bottom: 15px;">Sekme açmak için Sol menüde bulunan <b>SEKME</b> simgesine dokunun. Yeni sekme anında oluşacaktır Ama 5 sekme Limiti vardır.</p>
+            <div style="overflow: hidden; border-radius: 14px; border: 2px solid #313244;">
+                <img src="assets/icons/sekme-açma.png" style="width: 100%; display: block; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'">
+            </div>
+        </div>
+
         <div style="text-align: center; color: #585b70; font-size: 12px; margin-top: 10px;">
             İpucu: Ayarlar panelinden donanım hızlandırmayı açarak performansı artırabilirsiniz.
         </div>

@@ -1,10 +1,10 @@
-const { ipcMain, app } = require('electron');
+const { ipcMain, app, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const https = require('https');
 
-const CURRENT_VERSION = "1.4.2";
+const CURRENT_VERSION = "1.4.3";
 const UPDATE_URL = "https://raw.githubusercontent.com/wraitstudio-cmd/Anka-Web/main/latest.yml";
 
 let isListenersRegistered = false;
@@ -15,14 +15,13 @@ async function checkUpdates(win) {
     win.on('close', (e) => {
         if (win.isDownloading) {
             e.preventDefault();
+            win.webContents.send('download-alert', 'İndirme devam ediyor, lütfen bekleyin.');
         } else {
             app.exit(0);
         }
     });
 
-    https.get(`${UPDATE_URL}?t=${Date.now()}`, {
-        headers: { 'User-Agent': 'Mozilla/5.0' }
-    }, (res) => {
+    https.get(`${UPDATE_URL}?t=${Date.now()}`, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
         let data = '';
         res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
@@ -31,7 +30,6 @@ async function checkUpdates(win) {
                 data.split('\n').forEach(line => {
                     const cleanLine = line.trim();
                     if (!cleanLine || cleanLine.startsWith('#')) return;
-                    
                     const index = cleanLine.indexOf(':');
                     if (index !== -1) {
                         const key = cleanLine.substring(0, index).trim();
@@ -50,134 +48,63 @@ async function checkUpdates(win) {
                         });
                     }
                 }
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         });
     }).on('error', (err) => console.error(err));
 
     if (!isListenersRegistered) {
         ipcMain.on('start-download', (event, url) => {
-            if (!url) {
-                event.sender.send('download-error', 'URL bos olamaz.');
-                return;
-            }
-
+            if (!url) return;
             win.isDownloading = true;
-            
-            let fileExtension = 'exe';
-            try {
-                const urlPath = new URL(url).pathname;
-                const detectedExt = path.extname(urlPath).replace('.', '');
-                if (detectedExt && detectedExt.length <= 4) {
-                    fileExtension = detectedExt;
-                } else {
-                    fileExtension = process.platform === 'win32' ? 'exe' : 'deb';
-                }
-            } catch (urlErr) {
-                fileExtension = process.platform === 'win32' ? 'exe' : 'deb';
-            }
 
-            const updatePath = path.join(app.getPath('temp'), `AnkaUpdate.${fileExtension}`);
-            
-            if (fs.existsSync(updatePath)) {
-                try {
-                    fs.unlinkSync(updatePath);
-                } catch (err) {
-                    console.error(err);
-                }
-            }
+            const updatePath = path.join(app.getPath('temp'), `AnkaUpdate.${process.platform === 'win32' ? 'exe' : 'deb'}`);
+            if (fs.existsSync(updatePath)) fs.unlinkSync(updatePath);
 
-            const file = fs.createWriteStream(updatePath, { highWaterMark: 1024 * 1024 });
+            const file = fs.createWriteStream(updatePath);
 
             function downloadFile(downloadUrl) {
-                const options = {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0',
-                        'Accept': '*/*',
-                        'Connection': 'keep-alive'
-                    }
-                };
-
-                https.get(downloadUrl, options, (response) => {
-                    if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+                https.get(downloadUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (response) => {
+                    if (response.statusCode >= 300 && response.headers.location) {
                         downloadFile(response.headers.location);
-                        return;
-                    }
-
-                    if (response.statusCode !== 200) {
-                        win.isDownloading = false;
-                        file.end();
-                        event.sender.send('download-error', `Sunucu hatasi: ${response.statusCode}`);
                         return;
                     }
 
                     const total = parseInt(response.headers['content-length'], 10) || 0;
                     let downloaded = 0;
-                    let lastProgressTime = 0;
 
                     response.on('data', (chunk) => {
                         downloaded += chunk.length;
                         file.write(chunk);
-                        
-                        const now = Date.now();
-                        if (now - lastProgressTime > 100) {
-                            if (total > 0) {
-                                event.sender.send('download-progress', Math.round((downloaded / total) * 100));
-                            } else {
-                                event.sender.send('download-progress', -1);
-                            }
-                            lastProgressTime = now;
+                        if (total > 0) {
+                            event.sender.send('download-progress', Math.round((downloaded / total) * 100));
                         }
                     });
 
                     response.on('end', () => {
                         file.end();
-                        
-                        if (total > 0 && downloaded !== total) {
-                            win.isDownloading = false;
-                            if (fs.existsSync(updatePath)) fs.unlinkSync(updatePath);
-                            event.sender.send('download-error', 'Dosya eksik indirildi.');
-                            return;
-                        }
-
                         event.sender.send('download-progress', 100);
-                        event.sender.send('download-complete', updatePath);
                         
-                        const escapedPath = updatePath.replace(/"/g, '\\"');
-                        const cmd = process.platform === 'win32'
-                            ? `"${escapedPath}"`
-                            : `pkexec dpkg -i "${escapedPath}"`;
-
-                        exec(cmd, (err) => {
-                            if (!err) {
-                                setTimeout(() => { app.quit(); }, 500);
+                        setTimeout(() => {
+                            if (process.platform === 'win32') {
+                                shell.openPath(updatePath).then(() => app.exit(0));
                             } else {
-                                win.isDownloading = false;
-                                event.sender.send('install-error', err.message);
+                                exec(`pkexec dpkg -i "${updatePath}"`, (err) => {
+                                    if (!err) app.exit(0);
+                                });
                             }
-                        });
+                        }, 3000);
                     });
                 }).on('error', (err) => {
                     win.isDownloading = false;
-                    file.end();
-                    if (fs.existsSync(updatePath)) fs.unlinkSync(updatePath);
                     event.sender.send('download-error', err.message);
                 });
             }
-
             downloadFile(url);
         });
 
-        ipcMain.on('hide-update-banner', () => {
-            win.isDownloading = false;
-        });
-
+        ipcMain.on('hide-update-banner', () => { win.isDownloading = false; });
         isListenersRegistered = true;
     }
 }
-
-ipcMain.on('close-app-for-update', () => {
-    app.exit(0);});
 
 module.exports = { checkUpdates };

@@ -10,7 +10,7 @@ function createWindow() {
         frame: false,
         transparent: true,
         show: false,
-        icon: path.join(__dirname, '../assets/icons/logo.ico'),
+        icon: path.join(__dirname, '../assets/icons/logo.png'),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
