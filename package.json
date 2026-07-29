@@ -1,6 +1,6 @@
 {
   "name": "anka-web",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Anka Web",
   "main": "src/main.js",
   "scripts": {

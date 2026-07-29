@@ -4,17 +4,33 @@ let drawing = false;
 let paintOpen = false;
 let tool = 'pen';
 let undoStack = [];
+let persistentCanvasState = null;
 
 function initCanvas() {
     const container = document.getElementById('draw-layer');
     if (!container) return;
+    
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    if (canvas.width > 0 && canvas.height > 0) {
+        tempCtx.drawImage(canvas, 0, 0);
+    }
+
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
 
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    if (undoStack.length > 0) {
+    if (persistentCanvasState) {
+        let img = new Image();
+        img.src = persistentCanvasState;
+        img.onload = () => ctx.drawImage(img, 0, 0);
+    } else if (tempCanvas.width > 0 && tempCanvas.height > 0) {
+        ctx.drawImage(tempCanvas, 0, 0);
+    } else if (undoStack.length > 0) {
         let img = new Image();
         img.src = undoStack[undoStack.length - 1];
         img.onload = () => ctx.drawImage(img, 0, 0);
@@ -64,14 +80,15 @@ function stopDrawing() {
     if (drawing) {
         ctx.closePath();
         drawing = false;
+        persistentCanvasState = canvas.toDataURL();
     }
 }
 
 function applyStyles() {
     const colorEl = document.getElementById('p-color');
     const widthEl = document.getElementById('p-width');
-    const color = colorEl ? colorEl.value : '#000000';
-    const width = widthEl ? widthEl.value : 5;
+    const color = colorEl ? colorEl.value : '#ff4757';
+    const width = widthEl ? widthEl.value : 4;
 
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
@@ -83,7 +100,7 @@ function applyStyles() {
         ctx.shadowBlur = 0;
     }
 
-    ctx.globalAlpha = (tool === 'marker') ? 0.4 : 1.0;
+    ctx.globalAlpha = 1.0;
 }
 
 function makeDraggable(element, handle) {
@@ -180,17 +197,21 @@ function togglePaintMenu() {
     paintOpen = !paintOpen;
     const menu = document.getElementById('paint-menu');
     const layer = document.getElementById('draw-layer');
+    const btn = document.getElementById('btn-paint');
 
     if (!menu || !layer) return;
 
     if (paintOpen) {
         menu.style.display = 'flex';
         layer.classList.add('active');
+        if (btn) btn.classList.add('active');
         initCanvas();
     } else {
         menu.style.display = 'none';
         layer.classList.remove('active');
+        if (btn) btn.classList.remove('active');
         drawing = false;
+        persistentCanvasState = canvas.toDataURL();
     }
 }
 
@@ -213,12 +234,15 @@ function setBoardMode(mode) {
 
 function saveState() {
     if (undoStack.length >= 25) undoStack.shift();
-    undoStack.push(canvas.toDataURL());
+    const dataUrl = canvas.toDataURL();
+    undoStack.push(dataUrl);
+    persistentCanvasState = dataUrl;
 }
 
 function undo() {
     if (undoStack.length > 0) {
         const lastState = undoStack.pop();
+        persistentCanvasState = undoStack.length > 0 ? undoStack[undoStack.length - 1] : null;
         const img = new Image();
         img.src = lastState;
         img.onload = () => {
@@ -231,4 +255,5 @@ function undo() {
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     undoStack = [];
+    persistentCanvasState = null;
 }

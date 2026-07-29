@@ -3,102 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anka Web</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-
-<div id="titlebar">
-    <div id="drag-region">Anka Web</div>
-    <div id="window-controls">
-        <button class="w-control-btn" id="min-btn">-</button>
-        <button class="w-control-btn" id="max-btn">▢</button>
-        <button class="w-control-btn" id="close-btn">×</button>
-    </div>
-</div>
-
-<div id="app-container">
-    <div id="sidebar">
-        <img src="assets/icons/logo.png" class="logo" onclick="location.reload()">
-        <div style="flex:1"></div>
-
-        <div class="side-btn" onclick="togglePaintMenu()"><i>✏️</i><span>KALEM</span></div>
-        <div class="side-btn" onclick="toggleKeyboard()"><i>⌨️</i><span>KLAVYE</span></div>
-        <div class="side-btn" onclick="createNewTab('https://www.google.com')"><i>➕</i><span>SEKME</span></div>
-        <div class="side-btn" onclick="toggleSplitScreen()"><i>🌓</i><span>BÖL</span></div>
-        <div class="side-btn" onclick="openAISession()"><i>🤖</i><span>AI</span></div>
-        <div class="side-btn" onclick="toggleLimit()"><i>🔒</i><span>LİMİT</span></div>
-
-        <div style="flex:1"></div>
-
-        <div class="side-btn" onclick="toggleHelp()"><i>❓</i><span>YARDIM</span></div>
-        <div class="side-btn" onclick="toggleSettings()"><i>⚙️</i><span>AYARLAR</span></div>
-    </div>
-
-    <div id="main-view">
-        <div id="tab-bar"></div>
-        <div id="toolbar">
-            <input type="text" id="url-input" placeholder="Okul ağında güvenli arama...">
+<div class="main-container">
+    <div id="titlebar">
+        <div id="top-tabs-container">
+            <div style="position: relative; display: inline-block;">
+                <button id="tab-dropdown-btn" onclick="toggleTabDropdown(event)" title="Sekmeler Listesi">▼</button>
+                <div id="tab-dropdown-menu" style="display: none; position: fixed; top: 45px; left: 12px; width: 300px; background: #18181b; border: 1px solid #27272a; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); z-index: 9999999; padding: 10px; flex-direction: column; gap: 8px; backdrop-filter: blur(16px);">
+                    <input type="text" id="tab-search-input" placeholder="Sekmelerde ara..." oninput="filterTabs(this.value)" style="width: 100%; height: 36px; background: #121214; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 13px; outline: none; transition: all 0.2s;">
+                    <div id="tab-list-dropdown" style="display: flex; flex-direction: column; gap: 4px; max-height: 250px; overflow-y: auto; scrollbar-width: thin;"></div>
+                </div>
+            </div>
+            <div id="tab-bar"></div>
+            <button id="new-tab-btn" onclick="createNewTab('https://www.google.com')" title="Yeni Sekme">＋</button>
         </div>
-        <div id="wv-container" style="flex:1; display:flex;"></div>
+        <div id="window-controls">
+            <button class="w-control-btn" id="min-btn">-</button>
+            <button class="w-control-btn" id="max-btn">▢</button>
+            <button class="w-control-btn" id="close-btn">×</button>
+        </div>
+    </div>
+
+    <div id="app-container">
+        <div id="sidebar">
+            <img src="assets/icons/logo.png" class="logo" onclick="location.reload()" alt="Logo">
+            <div style="flex:1"></div>
+
+            <div class="side-btn" id="btn-paint" onclick="togglePaintMenu()"><i>✏️</i><span>KALEM</span></div>
+            <div class="side-btn" id="btn-keyboard" onclick="toggleKeyboard()"><i>⌨️</i><span>KLAVYE</span></div>
+            <div class="side-btn" onclick="createNewTab('https://www.google.com')"><i>➕</i><span>SEKME</span></div>
+            <div class="side-btn" id="btn-split" onclick="toggleSplitScreen()"><i>🌓</i><span>BÖL</span></div>
+            <div class="side-btn" onclick="openAISession()"><i>🤖</i><span>AI</span></div>
+            <div class="side-btn" id="btn-limit" onclick="toggleLimit()"><i>🔒</i><span>LİMİT</span></div>
+
+            <div style="flex:1"></div>
+
+            <div class="side-btn" onclick="toggleHelp()"><i>❓</i><span>YARDIM</span></div>
+            <div class="side-btn" onclick="toggleSettings()"><i>⚙️</i><span>AYARLAR</span></div>
+        </div>
+
+        <div id="main-view">
+            <div id="toolbar">
+                <button class="nav-tool-btn" onclick="goBack()" title="Geri">◀</button>
+                <button class="nav-tool-btn" onclick="goForward()" title="İleri">▶</button>
+                <button class="nav-tool-btn" onclick="reloadTab()" title="Yenile">🔄</button>
+                <input type="text" id="url-input" placeholder="Okul ağında güvenli arama...">
+            </div>
+            <div id="wv-container"></div>
+        </div>
     </div>
 </div>
 
-<div id="update-banner" class="glass-panel" style="display: none; position: fixed; top: 80px; right: 20px; width: 340px; background: rgba(30, 30, 46, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #cdd6f4; padding: 20px; border-radius: 16px; border: 1px solid rgba(137, 180, 250, 0.2); z-index: 99999; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 16px 40px rgba(0,0,0,0.6); box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); flex-direction: column;">
-
+<div id="update-banner" class="glass-panel" style="display: none; position: fixed; top: 80px; right: 20px; width: 340px; background: rgba(17, 17, 27, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #cdd6f4; padding: 20px; border-radius: 16px; border: 1px solid rgba(243, 139, 168, 0.3); z-index: 99999; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 20px 50px rgba(0,0,0,0.8); box-sizing: border-box; transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1), opacity 0.2s ease; flex-direction: column; will-change: transform, opacity;">
+    
     <div id="update-step-1">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <strong style="color: #89b4fa; font-size: 15px; display: flex; align-items: center; gap: 6px;">🚀 Güncelleme Mevcut</strong>
-            <span style="font-size: 12px; background: #313244; padding: 4px 8px; border-radius: 6px; color: #a6adc8; font-weight: 500;">Anka Web</span>
+            <strong style="color: #f38ba8; font-size: 15px; display: flex; align-items: center; gap: 6px;">🚀 Güncelleme Mevcut</strong>
+            <span style="font-size: 12px; background: #313244; padding: 4px 8px; border-radius: 6px; color: #a6adc8; font-weight: 500; border: 1px solid #45475a;">Anka Web</span>
         </div>
         <p id="update-info" style="font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; color: #bac2de;">Daha hızlı ve kararlı bir deneyim için yeni bir güncelleme hazır.</p>
 
         <div id="progress-container" style="display: none; width: 100%; background: #313244; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 16px;">
-            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #a6e3a1, #94e2d5); transition: width 0.3s ease;"></div>
+            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f38ba8, #fab387); transition: width 0.1s linear;"></div>
         </div>
 
         <div id="update-actions" style="display: flex; gap: 10px;">
-            <button id="later-btn" style="flex: 1; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background 0.2s, color 0.2s;">
-                Daha Sonra
-            </button>
-            <button id="update-btn" style="flex: 2; padding: 10px; background: #89b4fa; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: background 0.2s, transform 0.1s;">
-                Şimdi Güncelle
-            </button>
+            <button id="later-btn" style="flex: 1; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Daha Sonra</button>
+            <button id="update-btn" style="flex: 2; padding: 10px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Şimdi Güncelle</button>
         </div>
     </div>
 
-    <div id="update-step-2" style="display: none; text-align: center; animation: fadeIn 0.3s ease-in-out;">
-        <strong style="color: #f9e2af; font-size: 15px; display: block; margin-bottom: 10px;">⚠️ Kapatma İzni Gerekli</strong>
+    <div id="update-step-2" style="display: none; text-align: center;">
+        <strong style="color: #fab387; font-size: 15px; display: block; margin-bottom: 10px;">⚠️ Kapatma İzni Gerekli</strong>
         <p style="font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; color: #bac2de;">Güncellemeye devam edebilmemiz için programı kapatmanız gerekli. Lütfen aşağıdaki butona tıklayarak programı kapatın.</p>
-        <button id="close-app-btn" style="width: 100%; padding: 12px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px; transition: background 0.2s, transform 0.1s;">
-            Programı Kapat
-        </button>
+        <button id="close-app-btn" style="width: 100%; padding: 12px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Programı Kapat</button>
     </div>
 
-    <div id="update-step-error" style="display: none; animation: fadeIn 0.3s ease-in-out;">
+    <div id="update-step-error" style="display: none;">
         <strong style="color: #f38ba8; font-size: 15px; display: block; margin-bottom: 10px;">❌ Hata Oluştu</strong>
-        <p id="error-message" style="font-size: 13px; line-height: 1.5; margin: 0 0 12px 0; color: #f38ba8; background: rgba(243, 139, 168, 0.1); padding: 8px; border-radius: 6px; font-family: monospace;"></p>
+        <p id="error-message" style="font-size: 13px; line-height: 1.5; margin: 0 0 12px 0; color: #f38ba8; background: rgba(243, 139, 168, 0.1); padding: 8px; border-radius: 6px; font-family: monospace; border: 1px solid rgba(243, 139, 168, 0.2);"></p>
         <p style="font-size: 12px; line-height: 1.4; margin: 0 0 16px 0; color: #a6adc8;">Çözüm: İnternet bağlantınızı kontrol edin, uygulamayı yönetici olarak çalıştırmayı deneyin veya güncel sürümü web sitesinden manuel indirin.</p>
-        <button id="error-close-btn" style="width: 100%; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: background 0.2s;">
-            Kapat
-        </button>
+        <button id="error-close-btn" style="width: 100%; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Kapat</button>
     </div>
 </div>
 
-<style>
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.pulse-animation {
-    animation: pulse 1.5s infinite ease-in-out;
-}
-@keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-}
-</style>
+
+
+<div id="notification-container" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 1000000; pointer-events: none;"></div>
+
+<div id="paint-menu">
+    <div id="paint-handle" style="cursor: move; background: var(--accent); margin: -15px -15px 10px -15px; padding: 8px; border-radius: 14px 14px 0 0; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 5px; align-items: center; margin-left: 10px;">
+            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+        </div>
+        <button onclick="togglePaintMenu()" style="background: rgba(0,0,0,0.2); border: none; color: white; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center;">✕</button>
+    </div>
+
+    <div class="tool-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 5px;">
+        <div class="t-btn" onclick="setBoardMode('transparent')" title="Site">🌐</div>
+        <div class="t-btn" onclick="setBoardMode('white')" title="Beyaz">⬜</div>
+        <div class="t-btn" onclick="setBoardMode('lined')" title="Çizgili">📝</div>
+        <div class="t-btn" onclick="setBoardMode('grid')" title="Kareli">🏁</div>
+    </div>
+
+    <div class="tool-row">
+        <div class="t-btn active" id="t-pen" onclick="setTool('pen')">🖊️</div>
+        <div class="t-btn" id="t-neon" onclick="setTool('neon')">✨</div>
+        <div class="t-btn" id="t-eraser" onclick="setTool('eraser')">🧽</div>
+    </div>
+
+    <div class="tool-row">
+        <div class="t-btn" onclick="toggleMathTool('ruler')">📏</div>
+        <div class="t-btn" onclick="toggleMathTool('protractor')">📐</div>
+        <div class="t-btn" onclick="undo()">↩️</div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.3); padding:10px; border-radius:12px;">
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="color" id="p-color" value="#ff4757" style="width:36px; height:30px; border:none; background:none; cursor:pointer;">
+            <input type="range" id="p-width" min="1" max="50" value="4" style="flex:1; accent-color:var(--accent);">
+        </div>
+        <button onclick="clearCanvas()" style="background:#ff4757; border:none; color:white; padding:6px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:10px;">TEMİZLE</button>
+    </div>
+</div>
+
+<div id="ruler" class="math-tool" style="width:550px; height:90px; top:200px; left:300px;">
+    <div class="tool-ctrl">
+        <div class="c-btn" onmousedown="toolRotate(event, 'ruler')">🔄</div>
+        <div class="c-btn" onmousedown="toolScale(event, 'ruler')">↔️</div>
+        <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
+    </div>
+    <img src="assets/icons/cetvel.png" alt="Cetvel" style="width:100%; height:100%;">
+</div>
+
+<div id="protractor" class="math-tool" style="width:350px; height:175px; top:400px; left:400px;">
+    <div class="tool-ctrl">
+        <div class="c-btn" onmousedown="toolRotate(event, 'protractor')">🔄</div>
+        <div class="c-btn" onmousedown="toolScale(event, 'protractor')">↔️</div>
+        <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
+    </div>
+    <img src="assets/icons/açıölçer.png" alt="Açıölçer" style="width:100%; height:100%;">
+</div>
+
+<div id="keyboard">
+    <div class="kb-row" id="row1"></div>
+    <div class="kb-row" id="row2"></div>
+    <div class="kb-row" id="row3"></div>
+    <div class="kb-row">
+        <div class="kb-key" style="width:400px" onclick="typeChar(' ')">BOŞLUK</div>
+        <div class="kb-key" style="background:#e74c3c" onclick="toggleKeyboard()">KAPAT</div>
+    </div>
+</div>
+
+<div id="draw-layer"><canvas id="main-canvas"></canvas></div>
 
 <script>
     const { ipcRenderer } = require('electron');
@@ -192,77 +255,208 @@
         ipcRenderer.send('hide-update-banner');
         banner.style.display = 'none';
     });
+
+    function createNewTab(url = 'https://www.google.com') {
+        const id = 'tab-' + Date.now();
+        const tab = document.createElement('div');
+        tab.className = 'tab';
+        tab.id = 'btn-' + id;
+        tab.innerHTML = `
+            <img class="tab-icon" src="assets/icons/logo.png" alt="">
+            <span class="tab-title">Yeni Sekme</span>
+            <div class="close-tab" onclick="closeTab('${id}', event)">✕</div>
+        `;
+        tab.onclick = () => switchTab(id);
+        document.getElementById('tab-bar').appendChild(tab);
+
+        const vw = document.createElement('webview');
+        vw.id = id;
+        vw.src = url;
+        vw.autosize = 'on';
+        vw.partition = 'persist:main';
+        vw.style.cssText = "display:none; width:100%; height:100%; background: #121214;";
+        document.getElementById('wv-container').appendChild(vw);
+
+        vw.addEventListener('did-stop-loading', () => {
+            try {
+                const title = vw.getTitle() || 'Sayfa';
+                const titleEl = tab.querySelector('.tab-title');
+                if (titleEl) titleEl.innerText = title;
+                if (id === activeTabId) {
+                    document.getElementById('url-input').value = vw.getURL();
+                }
+            } catch(e) {}
+        });
+
+        switchTab(id);
+    }
+
+    function switchTab(id) {
+        activeTabId = id;
+        document.querySelectorAll('webview').forEach(el => {
+            el.classList.toggle('active', el.id === id);
+        });
+        document.querySelectorAll('.tab').forEach(el => {
+            el.classList.toggle('active', el.id === 'btn-' + id);
+        });
+        const activeVw = document.getElementById(id);
+        if (activeVw) {
+            try { document.getElementById('url-input').value = activeVw.getURL(); } catch(e) {}
+        }
+        document.getElementById('tab-dropdown-menu').style.display = 'none';
+    }
+
+    function closeTab(id, e) {
+        e.stopPropagation();
+        document.getElementById('btn-' + id)?.remove();
+        document.getElementById(id)?.remove();
+        if (activeTabId === id) {
+            const remaining = document.querySelectorAll('.tab');
+            if (remaining.length > 0) {
+                switchTab(remaining[remaining.length - 1].id.replace('btn-', ''));
+            } else {
+                createNewTab('https://www.google.com');
+            }
+        }
+    }
+
+    function toggleTabDropdown(e) {
+        if (e) e.stopPropagation();
+        const menu = document.getElementById('tab-dropdown-menu');
+        if (menu.style.display === 'flex') {
+            menu.style.display = 'none';
+        } else {
+            menu.style.display = 'flex';
+            renderTabListDropdown();
+            const input = document.getElementById('tab-search-input');
+            input.value = '';
+            input.focus();
+        }
+    }
+
+    function renderTabListDropdown(filter = '') {
+        const listContainer = document.getElementById('tab-list-dropdown');
+        listContainer.innerHTML = '';
+        
+        const tabs = document.querySelectorAll('.tab');
+        let matchedCount = 0;
+
+        tabs.forEach(tab => {
+            const id = tab.id.replace('btn-', '');
+            const titleEl = tab.querySelector('.tab-title');
+            const title = titleEl ? titleEl.innerText : 'Yeni Sekme';
+            const vw = document.getElementById(id);
+            const url = vw ? vw.getURL() : '';
+
+            if (filter && !title.toLowerCase().includes(filter.toLowerCase()) && !url.toLowerCase().includes(filter.toLowerCase())) {
+                return;
+            }
+
+            matchedCount++;
+            const item = document.createElement('div');
+            item.style.cssText = `display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${id === activeTabId ? 'rgba(255, 71, 87, 0.2)' : 'transparent'}; color: ${id === activeTabId ? '#ff4757' : '#f4f4f5'};`;
+            
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1;">
+                    <span style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${title}</span>
+                </div>
+                <span style="font-size: 11px; font-weight: 600; color: #a1a1aa;">${id === activeTabId ? 'Aktif' : ''}</span>
+            `;
+
+            item.onmouseover = () => { if(id !== activeTabId) item.style.background = '#27272a'; };
+            item.onmouseout = () => { if(id !== activeTabId) item.style.background = 'transparent'; };
+            item.onclick = () => switchTab(id);
+
+            listContainer.appendChild(item);
+        });
+
+        if (matchedCount === 0) {
+            listContainer.innerHTML = `<div style="padding: 16px; text-align: center; color: #71717a; font-size: 13px;">Sekme bulunamadı</div>`;
+        }
+    }
+
+    function filterTabs(query) {
+        renderTabListDropdown(query);
+    }
+
+    window.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('tab-dropdown-menu');
+        const btn = document.getElementById('tab-dropdown-btn');
+        if (dropdown.style.display === 'flex' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    function goBack() {
+        const activeVw = document.getElementById(activeTabId);
+        if (activeVw && activeVw.canGoBack()) activeVw.goBack();
+    }
+
+    function goForward() {
+        const activeVw = document.getElementById(activeTabId);
+        if (activeVw && activeVw.canGoForward()) activeVw.goForward();
+    }
+
+    function reloadTab() {
+        const activeVw = document.getElementById(activeTabId);
+        if (activeVw) activeVw.reload();
+    }
+
+    function togglePaintMenu() {
+        const menu = document.getElementById('paint-menu');
+        const btn = document.getElementById('btn-paint');
+        const isVisible = menu.style.display === 'flex';
+        menu.style.display = isVisible ? 'none' : 'flex';
+        if (btn) btn.classList.toggle('active', !isVisible);
+        
+        const drawLayer = document.getElementById('draw-layer');
+        if (drawLayer) drawLayer.classList.toggle('active', !isVisible);
+    }
+
+    function toggleKeyboard() {
+        const kb = document.getElementById('keyboard');
+        const btn = document.getElementById('btn-keyboard');
+        const isVisible = kb.style.display === 'flex';
+        kb.style.display = isVisible ? 'none' : 'flex';
+        if (btn) btn.classList.toggle('active', !isVisible);
+    }
+
+    function toggleMathTool(toolId) {
+        const tool = document.getElementById(toolId);
+        tool.style.display = tool.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleSplitScreen() {
+        const container = document.getElementById('wv-container');
+        const btn = document.getElementById('btn-split');
+        container.classList.toggle('split-mode');
+        if (btn) btn.classList.toggle('active');
+    }
+
+    function openAISession() { createNewTab('https://chatgpt.com'); }
+    
+    function toggleLimit() {
+        const btn = document.getElementById('btn-limit');
+        if (btn) btn.classList.toggle('active');
+    }
+
+    function toggleHelp() {}
+    function toggleSettings() {}
+    function setBoardMode(mode) {}
+    function setTool(tool) {}
+    function undo() {}
+    function clearCanvas() {}
+
+    document.getElementById('url-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const activeVw = document.getElementById(activeTabId);
+            if (activeVw) activeVw.loadURL(e.target.value);
+            e.target.blur();
+        }
+    });
+
+    createNewTab('https://www.google.com');
 </script>
-
-<div id="notification-container" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 1000000; pointer-events: none;"></div>
-
-<div id="paint-menu">
-    <div id="paint-handle" style="cursor: move; background: var(--accent); margin: -15px -15px 10px -15px; padding: 8px; border-radius: 23px 23px 0 0; display: flex; justify-content: center; align-items: center; gap: 5px;">
-        <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
-        <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
-        <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
-    </div>
-
-    <!-- Sayfa Modları -->
-    <div class="tool-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 5px;">
-        <div class="t-btn" onclick="setBoardMode('transparent')" title="Site">🌐</div>
-        <div class="t-btn" onclick="setBoardMode('white')" title="Beyaz">⬜</div>
-        <div class="t-btn" onclick="setBoardMode('lined')" title="Çizgili">📝</div>
-        <div class="t-btn" onclick="setBoardMode('grid')" title="Kareli">🏁</div>
-    </div>
-
-    <div class="tool-row">
-        <div class="t-btn active" id="t-pen" onclick="setTool('pen')">🖊️</div>
-        <div class="t-btn" id="t-neon" onclick="setTool('neon')">✨</div>
-        <div class="t-btn" id="t-eraser" onclick="setTool('eraser')">🧽</div>
-    </div>
-
-    <div class="tool-row">
-        <div class="t-btn" onclick="toggleMathTool('ruler')">📏</div>
-        <div class="t-btn" onclick="toggleMathTool('protractor')">📐</div>
-        <div class="t-btn" onclick="undo()">↩️</div>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.3); padding:10px; border-radius:15px;">
-        <div style="display:flex; gap:10px; align-items:center;">
-            <input type="color" id="p-color" value="#2ecc71" style="width:40px; height:30px; border:none; background:none; cursor:pointer;">
-            <input type="range" id="p-width" min="1" max="50" value="4" style="flex:1; accent-color:var(--accent);">
-        </div>
-        <button onclick="clearCanvas()" style="background:#ff4757; border:none; color:white; padding:5px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:10px;">TEMİZLE</button>
-    </div>
-</div>
-
-<div id="ruler" class="math-tool" style="width:550px; height:90px; top:200px; left:300px;">
-    <div class="tool-ctrl">
-        <div class="c-btn" onmousedown="toolRotate(event, 'ruler')">🔄</div>
-        <div class="c-btn" onmousedown="toolScale(event, 'ruler')">↔️</div>
-        <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
-    </div>
-    <img src="assets/icons/cetvel.png">
-</div>
-
-<div id="protractor" class="math-tool" style="width:350px; height:175px; top:400px; left:400px;">
-    <div class="tool-ctrl">
-        <div class="c-btn" onmousedown="toolRotate(event, 'protractor')">🔄</div>
-        <div class="c-btn" onmousedown="toolScale(event, 'protractor')">↔️</div>
-        <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
-    </div>
-    <img src="assets/icons/açıölçer.png">
-</div>
-
-<div id="keyboard">
-    <div class="kb-row" id="row1"></div>
-    <div class="kb-row" id="row2"></div>
-    <div class="kb-row" id="row3"></div>
-    <div class="kb-row">
-        <div class="kb-key" style="width:400px" onclick="typeChar(' ')">BOŞLUK</div>
-        <div class="kb-key" style="background:#e74c3c" onclick="toggleKeyboard()">KAPAT</div>
-    </div>
-</div>
-
-<webview id="tab-id" src="https://www.google.com" partition="persist:main" autosize="on"></webview>
-
-<div id="draw-layer"><canvas id="main-canvas"></canvas></div>
 
 <script src="renderer.js"></script>
 <script src="src/browser.js"></script>

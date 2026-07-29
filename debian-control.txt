@@ -1,9 +1,13 @@
 Package: anka-web
-Version: 1.4.3
+Version: 1.4.4
 Section: web
 Priority: optional
 Architecture: amd64
 Maintainer: WraitGame <wraitgame@gmail.com>
-Description: Anka Web
- Hafif ve hizli bir web tarayicisi.
+Description: Anka Web - Modern ve Gelismis Web Deneyimi
+ Anka Web, web gelistiricileri ve son kullanicilar icin ozel olarak tasarlanmis, 
+ modern web teknolojilerini destekleyen hafif, hizli ve guvenli bir tarayicidir. 
+ Gelismis sekme yonetimi, ozel guvenlik katmanlari, entegre yardim araclari, 
+ dusuk bellek kullanimi ve yuksek performansli sayfa olcekleme yetenekleriyle 
+ sorunsuz bir internet deneyimi sunar.
 Installed-Size: 263131
