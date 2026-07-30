@@ -5,6 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anka Web</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --bg-primary: #121214;
+            --bg-secondary: #18181b;
+            --bg-tertiary: #27272a;
+            --text-color: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --accent: #ff4757;
+            --border-color: #27272a;
+        }
+
+        body.light-theme {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e4e6eb;
+            --text-color: #050505;
+            --text-secondary: #65676b;
+            --accent: #ff4757;
+            --border-color: #ced0d4;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        #ai-mode-btn {
+            display: flex; align-items: center; gap: 6px; padding: 0 14px; height: 34px;
+            background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 18px;
+            color: var(--text-secondary); font-size: 12px; font-weight: 700; cursor: pointer;
+            white-space: nowrap; transition: .2s; margin-right: 8px;
+        }
+        #ai-mode-btn.active { background: linear-gradient(90deg,#ff4757,#ff7a45); color:#fff; border-color:transparent; box-shadow:0 0 14px rgba(255,71,87,.35); }
+        #toast-stack { position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:1000001; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+        .toast { background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-color); padding:10px 16px; border-radius:10px; font-size:13px; box-shadow:0 10px 30px rgba(0,0,0,.4); opacity:0; transform:translateY(-8px); transition:.25s; }
+        .toast.show { opacity:1; transform:translateY(0); }
+        .toast.error { border-color:#f38ba8; color:#ffd7e0; }
+
+        #titlebar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; height: 42px; user-select: none; -webkit-app-region: drag; }
+        #top-tabs-container { display: flex; align-items: center; gap: 6px; padding-left: 8px; flex: 1; overflow: hidden; -webkit-app-region: no-drag; }
+        #window-controls { display: flex; -webkit-app-region: no-drag; }
+        .w-control-btn { width: 45px; height: 42px; background: transparent; border: none; color: var(--text-color); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .w-control-btn:hover { background: var(--bg-tertiary); }
+        #close-btn:hover { background: #e81123; color: white; }
+
+        #app-container { display: flex; height: calc(100vh - 42px); width: 100vw; overflow: hidden; }
+        #sidebar { width: 64px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 10px; z-index: 10; }
+        .side-btn { width: 42px; height: 42px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); transition: 0.2s; background: transparent; border: none; font-size: 10px; gap: 2px; }
+        .side-btn i { font-size: 16px; font-style: normal; }
+        .side-btn span { font-size: 8px; font-weight: 700; }
+        .side-btn:hover, .side-btn.active { background: var(--bg-tertiary); color: var(--text-color); }
+        .logo { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; object-fit: cover; margin-bottom: 10px; }
+
+        #main-view { flex: 1; display: flex; flex-direction: column; background: var(--bg-primary); overflow: hidden; }
+        #toolbar { height: 48px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 12px; gap: 8px; }
+        .nav-tool-btn { width: 34px; height: 34px; border-radius: 8px; background: transparent; border: none; color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px; }
+        .nav-tool-btn:hover { background: var(--bg-tertiary); }
+        #url-input { flex: 1; height: 34px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 17px; padding: 0 16px; color: var(--text-color); font-size: 13px; outline: none; transition: 0.2s; }
+        #url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2); }
+
+        #wv-container { flex: 1; display: flex; position: relative; background: var(--bg-primary); overflow: hidden; }
+
+        .tab { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; max-width: 160px; min-width: 100px; cursor: pointer; user-select: none; font-size: 12px; color: var(--text-secondary); transition: 0.2s; }
+        .tab.active { background: var(--bg-secondary); color: var(--text-color); border-color: var(--accent); }
+        .tab-icon { width: 14px; height: 14px; border-radius: 3px; object-fit: contain; }
+        .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        
+        #new-tab-btn { width: 32px; height: 32px; background: transparent; border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s; }
+        #new-tab-btn:hover { background: var(--bg-tertiary); color: var(--text-color); border-color: var(--text-color); }
+        #tab-dropdown-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+        #tab-dropdown-btn:hover { background: var(--bg-tertiary); color: var(--text-color); }
+    </style>
 </head>
 <body>
 
@@ -13,13 +89,13 @@
         <div id="top-tabs-container">
             <div style="position: relative; display: inline-block;">
                 <button id="tab-dropdown-btn" onclick="toggleTabDropdown(event)" title="Sekmeler Listesi">▼</button>
-                <div id="tab-dropdown-menu" style="display: none; position: fixed; top: 45px; left: 12px; width: 300px; background: #18181b; border: 1px solid #27272a; border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); z-index: 9999999; padding: 10px; flex-direction: column; gap: 8px; backdrop-filter: blur(16px);">
-                    <input type="text" id="tab-search-input" placeholder="Sekmelerde ara..." oninput="filterTabs(this.value)" style="width: 100%; height: 36px; background: #121214; border: 1px solid #27272a; border-radius: 8px; padding: 0 12px; color: #f4f4f5; font-size: 13px; outline: none; transition: all 0.2s;">
+                <div id="tab-dropdown-menu" style="display: none; position: fixed; top: 45px; left: 12px; width: 300px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); z-index: 9999999; padding: 10px; flex-direction: column; gap: 8px; backdrop-filter: blur(16px);">
+                    <input type="text" id="tab-search-input" placeholder="Sekmelerde ara..." oninput="filterTabs(this.value)" style="width: 100%; height: 36px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0 12px; color: var(--text-color); font-size: 13px; outline: none; transition: all 0.2s;">
                     <div id="tab-list-dropdown" style="display: flex; flex-direction: column; gap: 4px; max-height: 250px; overflow-y: auto; scrollbar-width: thin;"></div>
                 </div>
             </div>
             <div id="tab-bar"></div>
-            <button id="new-tab-btn" onclick="createNewTab('https://www.google.com')" title="Yeni Sekme">＋</button>
+            <button id="new-tab-btn" onclick="createNewTab(getHomeUrl())" title="Yeni Sekme">＋</button>
         </div>
         <div id="window-controls">
             <button class="w-control-btn" id="min-btn">-</button>
@@ -35,7 +111,7 @@
 
             <div class="side-btn" id="btn-paint" onclick="togglePaintMenu()"><i>✏️</i><span>KALEM</span></div>
             <div class="side-btn" id="btn-keyboard" onclick="toggleKeyboard()"><i>⌨️</i><span>KLAVYE</span></div>
-            <div class="side-btn" onclick="createNewTab('https://www.google.com')"><i>➕</i><span>SEKME</span></div>
+            <div class="side-btn" onclick="createNewTab(getHomeUrl())"><i>➕</i><span>SEKME</span></div>
             <div class="side-btn" id="btn-split" onclick="toggleSplitScreen()"><i>🌓</i><span>BÖL</span></div>
             <div class="side-btn" onclick="openAISession()"><i>🤖</i><span>AI</span></div>
             <div class="side-btn" id="btn-limit" onclick="toggleLimit()"><i>🔒</i><span>LİMİT</span></div>
@@ -51,131 +127,99 @@
                 <button class="nav-tool-btn" onclick="goBack()" title="Geri">◀</button>
                 <button class="nav-tool-btn" onclick="goForward()" title="İleri">▶</button>
                 <button class="nav-tool-btn" onclick="reloadTab()" title="Yenile">🔄</button>
-                <input type="text" id="url-input" placeholder="Okul ağında güvenli arama...">
+                <input type="text" id="url-input" placeholder="Güvenli Arama...">
+                <div id="ai-mode-btn" onclick="toggleAiMode()" title="AI Modu">✨ AI</div>
             </div>
             <div id="wv-container"></div>
         </div>
     </div>
 </div>
 
-<div id="update-banner" class="glass-panel" style="display: none; position: fixed; top: 80px; right: 20px; width: 340px; background: rgba(17, 17, 27, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); color: #cdd6f4; padding: 20px; border-radius: 16px; border: 1px solid rgba(243, 139, 168, 0.3); z-index: 99999; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 20px 50px rgba(0,0,0,0.8); box-sizing: border-box; transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1), opacity 0.2s ease; flex-direction: column; will-change: transform, opacity;">
-    
+<div id="update-banner" class="glass-panel" style="display: none; position: fixed; top: 80px; right: 20px; width: 340px; background: rgba(17, 17, 27, 0.95); backdrop-filter: blur(16px); color: #cdd6f4; padding: 20px; border-radius: 16px; border: 1px solid rgba(243, 139, 168, 0.3); z-index: 99999; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 20px 50px rgba(0,0,0,0.8); box-sizing: border-box; flex-direction: column;">
     <div id="update-step-1">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <strong style="color: #f38ba8; font-size: 15px; display: flex; align-items: center; gap: 6px;">🚀 Güncelleme Mevcut</strong>
             <span style="font-size: 12px; background: #313244; padding: 4px 8px; border-radius: 6px; color: #a6adc8; font-weight: 500; border: 1px solid #45475a;">Anka Web</span>
         </div>
         <p id="update-info" style="font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; color: #bac2de;">Daha hızlı ve kararlı bir deneyim için yeni bir güncelleme hazır.</p>
-
         <div id="progress-container" style="display: none; width: 100%; background: #313244; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 16px;">
             <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f38ba8, #fab387); transition: width 0.1s linear;"></div>
         </div>
-
         <div id="update-actions" style="display: flex; gap: 10px;">
             <button id="later-btn" style="flex: 1; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Daha Sonra</button>
             <button id="update-btn" style="flex: 2; padding: 10px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Şimdi Güncelle</button>
         </div>
     </div>
-
     <div id="update-step-2" style="display: none; text-align: center;">
         <strong style="color: #fab387; font-size: 15px; display: block; margin-bottom: 10px;">⚠️ Kapatma İzni Gerekli</strong>
-        <p style="font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; color: #bac2de;">Güncellemeye devam edebilmemiz için programı kapatmanız gerekli. Lütfen aşağıdaki butona tıklayarak programı kapatın.</p>
         <button id="close-app-btn" style="width: 100%; padding: 12px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Programı Kapat</button>
     </div>
-
     <div id="update-step-error" style="display: none;">
         <strong style="color: #f38ba8; font-size: 15px; display: block; margin-bottom: 10px;">❌ Hata Oluştu</strong>
         <p id="error-message" style="font-size: 13px; line-height: 1.5; margin: 0 0 12px 0; color: #f38ba8; background: rgba(243, 139, 168, 0.1); padding: 8px; border-radius: 6px; font-family: monospace; border: 1px solid rgba(243, 139, 168, 0.2);"></p>
-        <p style="font-size: 12px; line-height: 1.4; margin: 0 0 16px 0; color: #a6adc8;">Çözüm: İnternet bağlantınızı kontrol edin, uygulamayı yönetici olarak çalıştırmayı deneyin veya güncel sürümü web sitesinden manuel indirin.</p>
         <button id="error-close-btn" style="width: 100%; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Kapat</button>
     </div>
 </div>
 
-
-
+<div id="toast-stack"></div>
 <div id="notification-container" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 1000000; pointer-events: none;"></div>
-
-<div id="paint-menu">
-    <div id="paint-handle" style="cursor: move; background: var(--accent); margin: -15px -15px 10px -15px; padding: 8px; border-radius: 14px 14px 0 0; display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; gap: 5px; align-items: center; margin-left: 10px;">
-            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
-            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
-            <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
-        </div>
-        <button onclick="togglePaintMenu()" style="background: rgba(0,0,0,0.2); border: none; color: white; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center;">✕</button>
-    </div>
-
-    <div class="tool-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 5px;">
-        <div class="t-btn" onclick="setBoardMode('transparent')" title="Site">🌐</div>
-        <div class="t-btn" onclick="setBoardMode('white')" title="Beyaz">⬜</div>
-        <div class="t-btn" onclick="setBoardMode('lined')" title="Çizgili">📝</div>
-        <div class="t-btn" onclick="setBoardMode('grid')" title="Kareli">🏁</div>
-    </div>
-
-    <div class="tool-row">
-        <div class="t-btn active" id="t-pen" onclick="setTool('pen')">🖊️</div>
-        <div class="t-btn" id="t-neon" onclick="setTool('neon')">✨</div>
-        <div class="t-btn" id="t-eraser" onclick="setTool('eraser')">🧽</div>
-    </div>
-
-    <div class="tool-row">
-        <div class="t-btn" onclick="toggleMathTool('ruler')">📏</div>
-        <div class="t-btn" onclick="toggleMathTool('protractor')">📐</div>
-        <div class="t-btn" onclick="undo()">↩️</div>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.3); padding:10px; border-radius:12px;">
-        <div style="display:flex; gap:10px; align-items:center;">
-            <input type="color" id="p-color" value="#ff4757" style="width:36px; height:30px; border:none; background:none; cursor:pointer;">
-            <input type="range" id="p-width" min="1" max="50" value="4" style="flex:1; accent-color:var(--accent);">
-        </div>
-        <button onclick="clearCanvas()" style="background:#ff4757; border:none; color:white; padding:6px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:10px;">TEMİZLE</button>
-    </div>
-</div>
-
-<div id="ruler" class="math-tool" style="width:550px; height:90px; top:200px; left:300px;">
-    <div class="tool-ctrl">
-        <div class="c-btn" onmousedown="toolRotate(event, 'ruler')">🔄</div>
-        <div class="c-btn" onmousedown="toolScale(event, 'ruler')">↔️</div>
-        <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
-    </div>
-    <img src="assets/icons/cetvel.png" alt="Cetvel" style="width:100%; height:100%;">
-</div>
-
-<div id="protractor" class="math-tool" style="width:350px; height:175px; top:400px; left:400px;">
-    <div class="tool-ctrl">
-        <div class="c-btn" onmousedown="toolRotate(event, 'protractor')">🔄</div>
-        <div class="c-btn" onmousedown="toolScale(event, 'protractor')">↔️</div>
-        <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
-    </div>
-    <img src="assets/icons/açıölçer.png" alt="Açıölçer" style="width:100%; height:100%;">
-</div>
-
-<div id="keyboard">
-    <div class="kb-row" id="row1"></div>
-    <div class="kb-row" id="row2"></div>
-    <div class="kb-row" id="row3"></div>
-    <div class="kb-row">
-        <div class="kb-key" style="width:400px" onclick="typeChar(' ')">BOŞLUK</div>
-        <div class="kb-key" style="background:#e74c3c" onclick="toggleKeyboard()">KAPAT</div>
-    </div>
-</div>
-
-<div id="draw-layer"><canvas id="main-canvas"></canvas></div>
 
 <script>
     const { ipcRenderer } = require('electron');
+
+    function applySavedTheme() {
+        const theme = localStorage.getItem('set_theme') || 'dark';
+        if (theme === 'light') {
+            document.body.classList.add('light-theme');
+        } else {
+            document.body.classList.remove('light-theme');
+        }
+    }
+    applySavedTheme();
+
+    function getSetting(id, def) {
+        const v = localStorage.getItem('set_' + id);
+        return v === null ? def : v;
+    }
+
+    function showToast(message, type = 'info') {
+        const stack = document.getElementById('toast-stack');
+        if (!stack) { console.log(message); return; }
+        const el = document.createElement('div');
+        el.className = 'toast' + (type === 'error' ? ' error' : '');
+        el.textContent = message;
+        stack.appendChild(el);
+        requestAnimationFrame(() => el.classList.add('show'));
+        setTimeout(() => {
+            el.classList.remove('show');
+            setTimeout(() => el.remove(), 300);
+        }, 3500);
+    }
+
+    window.addEventListener('error', (e) => {
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+        showToast('İşlem tamamlanamadı: ' + (e.reason && e.reason.message ? e.reason.message : 'bilinmeyen hata'), 'error');
+    });
+
+    function safeIpcSend(channel, payload) {
+        try {
+            ipcRenderer.send(channel, payload);
+            return true;
+        } catch (err) {
+            showToast('Bağlantı hatası (' + channel + ')', 'error');
+            return false;
+        }
+    }
 
     const banner = document.getElementById('update-banner');
     const step1 = document.getElementById('update-step-1');
     const step2 = document.getElementById('update-step-2');
     const stepError = document.getElementById('update-step-error');
-
     const updateBtn = document.getElementById('update-btn');
     const laterBtn = document.getElementById('later-btn');
     const closeAppBtn = document.getElementById('close-app-btn');
     const errorCloseBtn = document.getElementById('error-close-btn');
-
     const infoText = document.getElementById('update-info');
     const progressContainer = document.getElementById('progress-container');
     const progressBar = document.getElementById('progress-bar');
@@ -183,9 +227,9 @@
 
     let cachedFilePath = '';
 
-    document.getElementById('min-btn')?.addEventListener('click', () => ipcRenderer.send('window-minimize'));
-    document.getElementById('max-btn')?.addEventListener('click', () => ipcRenderer.send('window-maximize'));
-    document.getElementById('close-btn')?.addEventListener('click', () => ipcRenderer.send('window-close'));
+    document.getElementById('min-btn')?.addEventListener('click', () => safeIpcSend('window-minimize'));
+    document.getElementById('max-btn')?.addEventListener('click', () => safeIpcSend('window-maximize'));
+    document.getElementById('close-btn')?.addEventListener('click', () => safeIpcSend('window-close'));
 
     ipcRenderer.on('update-available', (event, data) => {
         banner.style.display = 'flex';
@@ -193,25 +237,20 @@
         step2.style.display = 'none';
         stepError.style.display = 'none';
         infoText.innerHTML = `<strong>Yeni Sürüm: ${data.version}</strong><br><small style="color: #a6adc8;">Otomatik yükleme hazırlandı.</small>`;
-
         updateBtn.style.display = '';
         progressContainer.style.display = 'none';
         laterBtn.style.display = '';
-        updateBtn.style.pointerEvents = '';
-        updateBtn.style.opacity = '';
-        updateBtn.innerText = 'Şimdi Güncelle';
-
         updateBtn.onclick = () => {
             updateBtn.style.pointerEvents = 'none';
             laterBtn.style.display = 'none';
             updateBtn.style.opacity = '0.5';
             updateBtn.innerText = "Bağlanılıyor...";
-            ipcRenderer.send('start-download', data.url);
+            safeIpcSend('start-download', data.url);
         };
     });
 
     laterBtn.addEventListener('click', () => {
-        ipcRenderer.send('hide-update-banner');
+        safeIpcSend('hide-update-banner');
         banner.style.display = 'none';
     });
 
@@ -221,10 +260,7 @@
             progressContainer.style.display = 'block';
         }
         progressBar.style.width = percent + "%";
-        infoText.innerHTML = `Güncelleniyor: <strong>%${percent}</strong><br><small style="color: #a6adc8;">Lütfen uygulamayı kapatmayın.</small>`;
-        if (percent > 99) {
-            progressBar.style.boxShadow = "0 0 15px #a6e3a1";
-        }
+        infoText.innerHTML = `Güncelleniyor: <strong>%${percent}</strong>`;
     });
 
     ipcRenderer.on('download-complete', (event, filePath) => {
@@ -235,8 +271,8 @@
 
     closeAppBtn.addEventListener('click', () => {
         if (cachedFilePath) {
-            ipcRenderer.send('run-installer', cachedFilePath);
-            ipcRenderer.send('close-app-for-update');
+            safeIpcSend('run-installer', cachedFilePath);
+            safeIpcSend('close-app-for-update');
         }
     });
 
@@ -245,79 +281,20 @@
         step2.style.display = 'none';
         stepError.style.display = 'block';
         errorMessage.textContent = message;
-        banner.style.border = "1px solid #f38ba8";
     }
 
     ipcRenderer.on('download-error', (event, message) => showError(message));
     ipcRenderer.on('install-error', (event, message) => showError(message));
 
     errorCloseBtn.addEventListener('click', () => {
-        ipcRenderer.send('hide-update-banner');
+        safeIpcSend('hide-update-banner');
         banner.style.display = 'none';
     });
 
-    function createNewTab(url = 'https://www.google.com') {
-        const id = 'tab-' + Date.now();
-        const tab = document.createElement('div');
-        tab.className = 'tab';
-        tab.id = 'btn-' + id;
-        tab.innerHTML = `
-            <img class="tab-icon" src="assets/icons/logo.png" alt="">
-            <span class="tab-title">Yeni Sekme</span>
-            <div class="close-tab" onclick="closeTab('${id}', event)">✕</div>
-        `;
-        tab.onclick = () => switchTab(id);
-        document.getElementById('tab-bar').appendChild(tab);
-
-        const vw = document.createElement('webview');
-        vw.id = id;
-        vw.src = url;
-        vw.autosize = 'on';
-        vw.partition = 'persist:main';
-        vw.style.cssText = "display:none; width:100%; height:100%; background: #121214;";
-        document.getElementById('wv-container').appendChild(vw);
-
-        vw.addEventListener('did-stop-loading', () => {
-            try {
-                const title = vw.getTitle() || 'Sayfa';
-                const titleEl = tab.querySelector('.tab-title');
-                if (titleEl) titleEl.innerText = title;
-                if (id === activeTabId) {
-                    document.getElementById('url-input').value = vw.getURL();
-                }
-            } catch(e) {}
-        });
-
-        switchTab(id);
-    }
-
-    function switchTab(id) {
-        activeTabId = id;
-        document.querySelectorAll('webview').forEach(el => {
-            el.classList.toggle('active', el.id === id);
-        });
-        document.querySelectorAll('.tab').forEach(el => {
-            el.classList.toggle('active', el.id === 'btn-' + id);
-        });
-        const activeVw = document.getElementById(id);
-        if (activeVw) {
-            try { document.getElementById('url-input').value = activeVw.getURL(); } catch(e) {}
-        }
-        document.getElementById('tab-dropdown-menu').style.display = 'none';
-    }
-
-    function closeTab(id, e) {
-        e.stopPropagation();
-        document.getElementById('btn-' + id)?.remove();
-        document.getElementById(id)?.remove();
-        if (activeTabId === id) {
-            const remaining = document.querySelectorAll('.tab');
-            if (remaining.length > 0) {
-                switchTab(remaining[remaining.length - 1].id.replace('btn-', ''));
-            } else {
-                createNewTab('https://www.google.com');
-            }
-        }
+    function getHomeUrl() {
+        const startup = getSetting('startup-page', 'home');
+        if (startup === 'blank') return 'about:blank';
+        return 'newtab.html';
     }
 
     function toggleTabDropdown(e) {
@@ -337,7 +314,6 @@
     function renderTabListDropdown(filter = '') {
         const listContainer = document.getElementById('tab-list-dropdown');
         listContainer.innerHTML = '';
-        
         const tabs = document.querySelectorAll('.tab');
         let matchedCount = 0;
 
@@ -354,24 +330,14 @@
 
             matchedCount++;
             const item = document.createElement('div');
-            item.style.cssText = `display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${id === activeTabId ? 'rgba(255, 71, 87, 0.2)' : 'transparent'}; color: ${id === activeTabId ? '#ff4757' : '#f4f4f5'};`;
-            
-            item.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden; flex: 1;">
-                    <span style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${title}</span>
-                </div>
-                <span style="font-size: 11px; font-weight: 600; color: #a1a1aa;">${id === activeTabId ? 'Aktif' : ''}</span>
-            `;
-
-            item.onmouseover = () => { if(id !== activeTabId) item.style.background = '#27272a'; };
-            item.onmouseout = () => { if(id !== activeTabId) item.style.background = 'transparent'; };
+            item.style.cssText = `display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${id === activeTabId ? 'rgba(255, 71, 87, 0.2)' : 'transparent'}; color: ${id === activeTabId ? '#ff4757' : 'var(--text-color)'};`;
+            item.innerHTML = `<span style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${title}</span>`;
             item.onclick = () => switchTab(id);
-
             listContainer.appendChild(item);
         });
 
         if (matchedCount === 0) {
-            listContainer.innerHTML = `<div style="padding: 16px; text-align: center; color: #71717a; font-size: 13px;">Sekme bulunamadı</div>`;
+            listContainer.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-secondary); font-size: 13px;">Sekme bulunamadı</div>`;
         }
     }
 
@@ -382,80 +348,26 @@
     window.addEventListener('click', (e) => {
         const dropdown = document.getElementById('tab-dropdown-menu');
         const btn = document.getElementById('tab-dropdown-btn');
-        if (dropdown.style.display === 'flex' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        if (dropdown && dropdown.style.display === 'flex' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
             dropdown.style.display = 'none';
         }
     });
 
-    function goBack() {
-        const activeVw = document.getElementById(activeTabId);
-        if (activeVw && activeVw.canGoBack()) activeVw.goBack();
-    }
-
-    function goForward() {
-        const activeVw = document.getElementById(activeTabId);
-        if (activeVw && activeVw.canGoForward()) activeVw.goForward();
-    }
-
-    function reloadTab() {
-        const activeVw = document.getElementById(activeTabId);
-        if (activeVw) activeVw.reload();
-    }
-
-    function togglePaintMenu() {
-        const menu = document.getElementById('paint-menu');
-        const btn = document.getElementById('btn-paint');
-        const isVisible = menu.style.display === 'flex';
-        menu.style.display = isVisible ? 'none' : 'flex';
-        if (btn) btn.classList.toggle('active', !isVisible);
-        
-        const drawLayer = document.getElementById('draw-layer');
-        if (drawLayer) drawLayer.classList.toggle('active', !isVisible);
-    }
-
-    function toggleKeyboard() {
-        const kb = document.getElementById('keyboard');
-        const btn = document.getElementById('btn-keyboard');
-        const isVisible = kb.style.display === 'flex';
-        kb.style.display = isVisible ? 'none' : 'flex';
-        if (btn) btn.classList.toggle('active', !isVisible);
-    }
-
-    function toggleMathTool(toolId) {
-        const tool = document.getElementById(toolId);
-        tool.style.display = tool.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleSplitScreen() {
-        const container = document.getElementById('wv-container');
-        const btn = document.getElementById('btn-split');
-        container.classList.toggle('split-mode');
-        if (btn) btn.classList.toggle('active');
-    }
-
-    function openAISession() { createNewTab('https://chatgpt.com'); }
-    
-    function toggleLimit() {
-        const btn = document.getElementById('btn-limit');
-        if (btn) btn.classList.toggle('active');
-    }
-
+    function togglePaintMenu() {}
+    function toggleKeyboard() {}
+    function toggleSplitScreen() {}
+    function toggleLimit() {}
     function toggleHelp() {}
     function toggleSettings() {}
-    function setBoardMode(mode) {}
-    function setTool(tool) {}
-    function undo() {}
-    function clearCanvas() {}
 
-    document.getElementById('url-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const activeVw = document.getElementById(activeTabId);
-            if (activeVw) activeVw.loadURL(e.target.value);
-            e.target.blur();
+    window.addEventListener('load', () => {
+        if (typeof setAiMode === 'function' && typeof isAiModeActive === 'function') {
+            setAiMode(isAiModeActive());
+        }
+        if (typeof createNewTab === 'function' && document.querySelectorAll('.tab').length === 0) {
+            createNewTab(getHomeUrl());
         }
     });
-
-    createNewTab('https://www.google.com');
 </script>
 
 <script src="renderer.js"></script>

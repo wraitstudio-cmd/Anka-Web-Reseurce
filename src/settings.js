@@ -11,22 +11,26 @@ function createSettingsPanel() {
         .settings-content { flex: 1; padding: 32px 48px; overflow-y: auto; background: #202124; }
         .settings-section-title { font-size: 22px; font-weight: 400; color: #e8eaed; margin-bottom: 24px; }
         .settings-group { background: #292a2d; border-radius: 8px; border: 1px solid #3c4043; margin-bottom: 20px; overflow: hidden; }
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #3c4043; transition: 0.2s; }
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #3c4043; transition: 0.2s; gap: 20px; }
         .settings-item:last-child { border-bottom: none; }
         .settings-item:hover { background: #323337; }
         .settings-label { font-size: 14px; color: #e8eaed; font-weight: 400; }
         .settings-desc { font-size: 12px; color: #9aa0a6; margin-top: 2px; }
         
-        .settings-toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
+        .settings-toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
         .settings-toggle input { opacity: 0; width: 0; height: 0; }
         .settings-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #5f6368; transition: .2s; border-radius: 20px; }
         .settings-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: #202124; transition: .2s; border-radius: 50%; }
         .settings-toggle input:checked + .settings-slider { background-color: #8ab4f8; }
         .settings-toggle input:checked + .settings-slider:before { transform: translateX(16px); }
 
-        .settings-select { background: #3c4043; color: #e8eaed; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer; }
-        .settings-btn { background: #8ab4f8; color: #202124; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .settings-select { background: #3c4043; color: #e8eaed; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; outline: none; cursor: pointer; flex-shrink:0; }
+        .settings-text { background: #3c4043; color: #e8eaed; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; outline: none; width: 220px; flex-shrink:0; }
+        .settings-btn { background: #8ab4f8; color: #202124; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; flex-shrink:0; }
         .settings-btn:hover { background: #aecbfa; }
+        .settings-status { font-size: 11px; padding: 4px 10px; border-radius: 10px; font-weight: 600; flex-shrink:0; }
+        .settings-status.ok { background: #1e3a2e; color: #81c995; }
+        .settings-status.no { background: #3a2222; color: #f28b82; }
 
         #fps-display { position: fixed; top: 50px; right: 20px; z-index: 999999; background: rgba(0,0,0,0.8); color: #8ab4f8; padding: 6px 12px; border-radius: 6px; display: none; font-family: monospace; font-size: 12px; pointer-events: none; border: 1px solid #3c4043; }
     </style>`;
@@ -40,6 +44,7 @@ function createSettingsPanel() {
             <div class="settings-sidebar">
                 <h3 style="margin: 0 0 16px 16px; color:#e8eaed; font-size: 18px; font-weight: 500;">Ayarlar</h3>
                 <div class="settings-nav-item active" onclick="switchSettingsTab('genel', this)">🛡️ Genel</div>
+                <div class="settings-nav-item" onclick="switchSettingsTab('arama', this)">🔎 Arama ve AI</div>
                 <div class="settings-nav-item" onclick="switchSettingsTab('performans', this)">⚡ Performans</div>
                 <div class="settings-nav-item" onclick="switchSettingsTab('gizlilik', this)">🔒 Gizlilik ve Güvenlik</div>
                 <div class="settings-nav-item" onclick="switchSettingsTab('gorunum', this)">🎨 Görünüm</div>
@@ -60,10 +65,21 @@ function createSettingsPanel() {
 const settingsData = {
     genel: [
         { id: 'notifications', label: 'Bildirimler', desc: 'Uygulama içi anlık bildirimlere izin ver', type: 'toggle', default: true },
-        { id: 'auto-save', label: 'Otomatik Kayıt', desc: 'Çalışma alanını ve çizimleri otomatik olarak kaydet', type: 'toggle', default: true },
+        { id: 'auto-save', label: 'Otomatik Kayıt', desc: 'Çalışma alanını, ayarları ve çizimleri otomatik olarak kaydet', type: 'toggle', default: true },
         { id: 'start-fullscreen', label: 'Tam Ekran Başlat', desc: 'Uygulama açıldığında otomatik olarak tam ekrana geç', type: 'toggle', default: false },
-        { id: 'default-browser', label: 'Varsayılan Tarayıcı Yap', desc: 'Linux veya Windows sisteminde varsayılan tarayıcı olarak ayarla', type: 'button', btnText: 'Varsayılan Ayarla', action: 'setDefaultBrowser' },
-        { id: 'startup-page', label: 'Başlangıç Sayfası', desc: 'Tarayıcı açıldığında yüklenen sayfa', type: 'select', options: [{val: 'home', name: 'Ana Sayfa'}, {val: 'blank', name: 'Boş Sayfa'}, {val: 'last', name: 'Önceki Oturumu Kurtar'}], default: 'home' }
+        { id: 'default-browser', label: 'Varsayılan Tarayıcı Yap', desc: 'İşletim sisteminde varsayılan web tarayıcısı olarak ayarla', type: 'button-status', btnText: 'Varsayılan Ayarla', action: 'setDefaultBrowser', statusCheck: 'checkDefaultBrowser' },
+        { id: 'startup-page', label: 'Başlangıç Sayfası', desc: 'Tarayıcı açıldığında yüklenen sayfa', type: 'select', options: [{val: 'home', name: 'Hız Çubuğu (Ana Sayfa)'}, {val: 'blank', name: 'Boş Sayfa'}, {val: 'last', name: 'Önceki Oturumu Kurtar'}], default: 'home' },
+        { id: 'max-tabs', label: 'Maksimum Sekme Sayısı', desc: 'Aynı anda açık tutulabilecek sekme sayısı sınırı', type: 'text', placeholder: '10', default: '10' }
+    ],
+    arama: [
+        { id: 'search-engine', label: 'Arama Motoru', desc: 'Adres çubuğuna yazılan aramaların gönderileceği motor', type: 'select', options: [
+            {val:'google', name:'Google'}, {val:'yandex', name:'Yandex'}, {val:'bing', name:'Bing'}, {val:'duckduckgo', name:'DuckDuckGo'}, {val:'custom', name:'Özel (aşağıda tanımla)'}
+        ], default: 'google' },
+        { id: 'custom-search-url', label: 'Özel Arama Adresi', desc: `Sadece "Özel" seçiliyken kullanılır. %s aranan kelimenin yerine geçer.`, type: 'text', placeholder: 'https://ornek.com/ara?q=%s', default: 'https://www.google.com/search?q=%s' },
+        { id: 'ai-mode-active', label: 'AI Modu', desc: 'Adres çubuğundaki aramaları yapay zekaya yönlendir', type: 'toggle', default: false },
+        { id: 'ai-provider', label: 'AI Sağlayıcı', desc: 'AI Modu ve AI kısayolu için kullanılacak servis', type: 'select', options: [
+            {val:'google-ai', name:'Google AI Modu'}, {val:'chatgpt', name:'ChatGPT'}, {val:'gemini', name:'Gemini'}, {val:'perplexity', name:'Perplexity'}
+        ], default: 'google-ai' }
     ],
     performans: [
         { id: 'hw-accel', label: 'Donanım Hızlandırma', desc: 'Mümkün olduğunda grafik işlemcisini kullan', type: 'toggle', default: true },
@@ -92,7 +108,7 @@ function switchSettingsTab(cat, el) {
     const body = document.getElementById('settings-body');
     if (!body) return;
 
-    let titles = { genel: 'Genel', performans: 'Performans', gizlilik: 'Gizlilik ve Güvenlik', gorunum: 'Görünüm' };
+    let titles = { genel: 'Genel', arama: 'Arama ve AI', performans: 'Performans', gizlilik: 'Gizlilik ve Güvenlik', gorunum: 'Görünüm' };
     body.innerHTML = `<div class="settings-section-title">${titles[cat]}</div>`;
 
     const group = document.createElement('div');
@@ -102,7 +118,7 @@ function switchSettingsTab(cat, el) {
         let val;
         const stored = localStorage.getItem('set_' + s.id);
         if (stored !== null) {
-            val = (s.type === 'select') ? stored : (stored === 'true');
+            val = (s.type === 'select' || s.type === 'text') ? stored : (stored === 'true');
         } else {
             val = s.default;
             if (s.id === 'start-fullscreen') {
@@ -124,8 +140,16 @@ function switchSettingsTab(cat, el) {
         } else if (s.type === 'select') {
             let optionsHTML = s.options.map(o => `<option value="${o.val}" ${val === o.val ? 'selected' : ''}>${o.name}</option>`).join('');
             controlHTML = `<select class="settings-select" onchange="saveSetting('${s.id}', this.value)">${optionsHTML}</select>`;
+        } else if (s.type === 'text') {
+            controlHTML = `<input class="settings-text" type="text" value="${(val || '').replace(/"/g, '&quot;')}" placeholder="${s.placeholder || ''}" onchange="saveSetting('${s.id}', this.value)">`;
         } else if (s.type === 'button') {
             controlHTML = `<button class="settings-btn" onclick="executeSettingAction('${s.action}')">${s.btnText}</button>`;
+        } else if (s.type === 'button-status') {
+            controlHTML = `
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="settings-status" id="status-${s.id}">Kontrol ediliyor...</span>
+                    <button class="settings-btn" onclick="executeSettingAction('${s.action}')">${s.btnText}</button>
+                </div>`;
         }
 
         item.innerHTML = `
@@ -136,6 +160,11 @@ function switchSettingsTab(cat, el) {
             ${controlHTML}
         `;
         group.appendChild(item);
+
+        if (s.type === 'button-status' && s.statusCheck) {
+            // Asenkron durum kontrolü (ana süreç desteklemiyorsa sessizce "bilinmiyor" gösterir)
+            Promise.resolve().then(() => window[s.statusCheck] && window[s.statusCheck]());
+        }
     });
 
     body.appendChild(group);
@@ -144,19 +173,44 @@ function switchSettingsTab(cat, el) {
 function saveSetting(id, val) {
     localStorage.setItem('set_' + id, val);
     applySetting(id, val);
-    try { 
-        require('electron').ipcRenderer.send('settings-update', { id, val }); 
+    try {
+        require('electron').ipcRenderer.send('settings-update', { id, val });
     } catch(e) {}
 }
 
 function executeSettingAction(action) {
     if (action === 'setDefaultBrowser') {
         try {
-            require('electron').ipcRenderer.send('set-as-default-browser');
-            alert('Tarayıcınız sistem varsayılanı olarak ayarlandı!');
+            const { ipcRenderer } = require('electron');
+            ipcRenderer.send('set-as-default-browser');
+            // Ana süreçten sonucu bekle; yoksa birkaç saniye sonra tekrar kontrol et
+            setTimeout(checkDefaultBrowser, 1500);
+            if (typeof showToast === 'function') showToast('Varsayılan tarayıcı isteği gönderildi.');
         } catch(e) {
-            alert('Varsayılan tarayıcı ayarlama işlemi bu ortamda destekleniyor.');
+            if (typeof showToast === 'function') {
+                showToast('Bu işlem bu ortamda desteklenmiyor.', 'error');
+            } else {
+                alert('Varsayılan tarayıcı ayarlama işlemi bu ortamda desteklenmiyor.');
+            }
         }
+    }
+}
+
+function checkDefaultBrowser() {
+    const badge = document.getElementById('status-default-browser');
+    if (!badge) return;
+    try {
+        const { ipcRenderer } = require('electron');
+        ipcRenderer.invoke('check-default-browser').then(isDefault => {
+            badge.textContent = isDefault ? 'Varsayılan ✓' : 'Varsayılan Değil';
+            badge.className = 'settings-status ' + (isDefault ? 'ok' : 'no');
+        }).catch(() => {
+            badge.textContent = 'Durum bilinmiyor';
+            badge.className = 'settings-status no';
+        });
+    } catch (e) {
+        badge.textContent = 'Durum bilinmiyor';
+        badge.className = 'settings-status no';
     }
 }
 
@@ -170,6 +224,10 @@ function applySetting(id, val) {
         } catch(e) {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
         }
+    } else if (id === 'ai-mode-active') {
+        const active = (val === true || val === 'true');
+        const btn = document.getElementById('ai-mode-btn');
+        if (btn) btn.classList.toggle('active', active);
     }
 }
 

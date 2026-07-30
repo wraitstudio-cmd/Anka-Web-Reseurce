@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Anka Web</title>
+<style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: radial-gradient(circle at 50% -15%, #18181c 0%, #09090b 75%); font-family: 'Segoe UI', system-ui, sans-serif; color: #f4f4f5; overflow-y: auto; }
+    
+    /* Scrollbar Tasarımı */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+
+    .wrap { max-width: 900px; margin: 0 auto; padding: 70px 20px 40px; display: flex; flex-direction: column; align-items: center; position: relative; animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .top-bar { position: absolute; top: 20px; right: 30px; display: flex; align-items: center; gap: 15px; }
+    
+    .profile-btn { display: flex; align-items: center; gap: 10px; background: #18181b; border: 1px solid #27272a; padding: 6px 16px 6px 6px; border-radius: 32px; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+    .profile-btn:hover { background: #27272a; border-color: #52525b; transform: scale(1.02); }
+    .profile-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ff4757; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; overflow: hidden; }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-info { display: flex; flex-direction: column; text-align: left; }
+    .profile-name { font-size: 14px; font-weight: 600; color: #f4f4f5; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .profile-status { font-size: 11px; color: #10b981; font-weight: 500; }
+
+    .network-banner { position: fixed; top: 0; left: 0; width: 100%; background: #ff4757; color: #fff; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(255,71,87,.3); animation: slideDown 0.3s ease; }
+    @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+    .network-banner.offline { display: block; }
+
+    .logo { font-size: 42px; font-weight: 700; letter-spacing: 1px; margin-bottom: 35px; display: flex; align-items: center; gap: 10px; user-select: none; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .logo span.mark { color: #ff4757; }
+
+    .searchbar { width: 100%; max-width: 680px; display: flex; align-items: center; gap: 10px; background: #121215; border: 1px solid #27272a; border-radius: 40px; padding: 10px 12px 10px 24px; box-shadow: 0 15px 45px rgba(0,0,0,0.6); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .searchbar:focus-within { border-color: #ff4757; box-shadow: 0 15px 45px rgba(255,71,87,0.3); transform: scale(1.01); }
+    .searchbar input { flex: 1; background: none; border: none; outline: none; color: #f4f4f5; font-size: 16px; padding: 10px 0; }
+    
+    .ai-toggle { display: flex; align-items: center; gap: 6px; background: #18181b; border: 1px solid #27272a; padding: 10px 18px; border-radius: 30px; cursor: pointer; font-size: 13px; font-weight: 600; color: #a1a1aa; user-select: none; white-space: nowrap; transition: 0.3s; }
+    .ai-toggle:hover { background: #27272a; color: #fff; }
+    .ai-toggle.active { background: linear-gradient(90deg, #ff4757, #ff7a45); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(255,71,87,0.4); }
+    
+    .engine-pill { font-size: 13px; color: #a1a1aa; margin-top: 16px; }
+    .engine-pill b { color: #ff4757; cursor: pointer; }
+
+    .grid { margin-top: 55px; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 22px; width: 100%; max-width: 760px; }
+    .tile { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; padding: 18px 10px; border-radius: 20px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; background: rgba(24, 24, 27, 0.6); border: 1px solid rgba(39, 39, 42, 0.6); backdrop-filter: blur(12px); animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+    .tile:hover { background: #18181b; border-color: #52525b; transform: translateY(-5px) scale(1.03); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .tile .icon-box { width: 60px; height: 60px; border-radius: 18px; background: #121215; border: 1px solid #27272a; display: flex; align-items: center; justify-content: center; overflow: hidden; transition: 0.3s; }
+    .tile:hover .icon-box { border-color: #ff4757; }
+    .tile img { width: 32px; height: 32px; }
+    .tile .name { font-size: 13px; color: #e4e4e7; text-align: center; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .tile .del { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%; background: #27272a; color: #f4f4f5; font-size: 12px; display: none; align-items: center; justify-content: center; transition: 0.2s; z-index: 2; }
+    .tile .del:hover { background: #ff4757; transform: scale(1.1); }
+    .tile:hover .del { display: flex; }
+    .tile.add .icon-box { border-style: dashed; color: #71717a; font-size: 28px; background: transparent; }
+
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; animation: fadeIn 0.2s ease; }
+    .modal { width: 420px; background: #121215; border: 1px solid #27272a; border-radius: 24px; padding: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.8); animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .modal h3 { margin: 0 0 20px; font-size: 18px; font-weight: 600; color: #fff; }
+    
+    /* Seçim alanları ve inputların karanlık temaya tam uyumu (beyazlıkların giderilmesi) */
+    .modal input, .modal select, .settings-card input, .settings-card select { width: 100%; background: #18181b; color-scheme: dark; border: 1px solid #27272a; border-radius: 14px; padding: 14px; color: #f4f4f5; margin-bottom: 14px; font-size: 14px; outline: none; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal input:focus, .modal select:focus, .settings-card input:focus, .settings-card select:focus { border-color: #ff4757; box-shadow: 0 0 0 3px rgba(255,71,87,0.15); background: #1f1f23; }
+    
+    /* Select açılır menü seçeneklerinin koyu arkaplanı */
+    select option { background: #121215; color: #f4f4f5; padding: 10px; }
+
+    .modal .row { display: flex; gap: 12px; margin-top: 10px; }
+    .modal button { flex: 1; padding: 14px; border: none; border-radius: 14px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .modal .save { background: #ff4757; color: #fff; }
+    .modal .save:hover { background: #e03e4d; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(224,62,77,0.4); }
+    .modal .cancel { background: #27272a; color: #d4d4d8; }
+    .modal .cancel:hover { background: #3f3f46; transform: translateY(-2px); }
+
+    .view-container { display: none; width: 100%; max-width: 860px; margin: 0 auto; padding: 50px 20px; animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .view-container.active { display: block; }
+    .view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+    .view-header h2 { margin: 0; font-size: 26px; color: #fff; }
+    .back-btn { background: #27272a; border: none; color: #f4f4f5; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .back-btn:hover { background: #3f3f46; transform: scale(1.05); }
+    
+    .settings-card { background: #121215; border: 1px solid #27272a; border-radius: 20px; padding: 26px; margin-bottom: 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: 0.3s; }
+    .settings-card:hover { border-color: #3f3f46; }
+    .settings-card h4 { margin: 0 0 16px; font-size: 15px; color: #ff4757; text-transform: uppercase; letter-spacing: 0.5px; }
+    .account-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .account-item { display: flex; align-items: center; justify-content: space-between; background: #18181b; padding: 14px 18px; border-radius: 14px; border: 1px solid #27272a; transition: 0.2s; }
+    .account-item:hover { border-color: #3f3f46; transform: scale(1.01); }
+    .account-info { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+    
+    .auth-btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 6px 20px rgba(59,130,246,0.4); display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(59,130,246,0.6); filter: brightness(1.1); }
+</style>
+</head>
+<body>
+
+<div id="netBanner" class="network-banner">İnternet bağlantınız yok! Lütfen bağlantınızı kontrol edin.</div>
+
+<div class="wrap" id="homeView">
+  <div class="top-bar">
+    <div class="profile-btn" id="profileBtn" onclick="openAuthView()">
+      <div class="profile-avatar" id="profileAvatar">M</div>
+      <div class="profile-info">
+        <div class="profile-name" id="profileName">Misafir</div>
+        <div class="profile-status" id="profileStatusText">Giriş Yapılmadı</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="logo">Anka <span class="mark">Web</span></div>
+
+  <div class="searchbar">
+    <input id="q" placeholder="Arayın ya da bir adres yazın..." autofocus>
+    <div class="ai-toggle" id="aiToggle" onclick="toggleAI()">✨ AI Modu</div>
+  </div>
+  <div class="engine-pill">Arama motoru: <b id="engineLabel" onclick="openAuthView()" title="Değiştirmek için tıklayın">Google</b></div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="view-container" id="authView">
+  <div class="view-header">
+    <h2>Anka Hesap ve Profil Merkezi</h2>
+    <button class="back-btn" onclick="closeAuthView()">Geri Dön</button>
+  </div>
+
+  <div class="settings-card">
+    <h4>Arama Motoru Seçimi</h4>
+    <select id="engineSelect" onchange="changeSearchEngine(this.value)">
+      <option value="google">Google</option>
+      <option value="yandex">Yandex</option>
+      <option value="bing">Bing</option>
+      <option value="duckduckgo">DuckDuckGo</option>
+    </select>
+  </div>
+
+  <div class="settings-card">
+    <h4>Kayıtlı Profiller ve Hesaplar</h4>
+    <div class="account-list" id="accountList"></div>
+    <button class="auth-btn" onclick="handleEngineLoginRedirect()">
+      <span>Arama Motoru Hesabı ile Giriş Yap / Hesap Oluştur</span>
+    </button>
+  </div>
+
+  <div class="settings-card">
+    <h4>Yerel Aktif Profil Ayarları</h4>
+    <input type="text" id="editName" placeholder="Görünen Ad">
+    <input type="text" id="editEmail" placeholder="E-posta Adresi">
+    <input type="text" id="editAvatar" placeholder="Profil Fotoğrafı URL adresi">
+    <input type="file" id="localAvatarFile" accept="image/*" onchange="loadLocalImage(event)" style="width:100%; background:#18181b; border:1px solid #27272a; border-radius:14px; padding:14px; color:#fff; margin-bottom:14px; cursor:pointer;">
+    <button class="auth-btn" onclick="saveProfile()" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 6px 20px rgba(16,185,129,0.4);">Değişiklikleri Kaydet</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modalTitle">Kısayol Ekle</h3>
+    <input id="m-name" placeholder="Ad (ör. YouTube)">
+    <input id="m-url" placeholder="Adres (ör. https://youtube.com)">
+    <div class="row">
+      <button class="cancel" onclick="closeModal()">Vazgeç</button>
+      <button class="save" onclick="saveShortcut()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULTS = [
+  { name:'YouTube', url:'https://youtube.com' },
+  { name:'Wikipedia', url:'https://wikipedia.org' },
+  { name:'Gmail', url:'https://mail.google.com' },
+  { name:'Instagram', url:'https://instagram.com' },
+  { name:'Twitter / X', url:'https://x.com' },
+  { name:'Harita', url:'https://maps.google.com' }
+];
+
+function checkNetwork() {
+  const banner = document.getElementById('netBanner');
+  if (!navigator.onLine) {
+    banner.classList.add('offline');
+  } else {
+    banner.classList.remove('offline');
+  }
+}
+window.addEventListener('online', checkNetwork);
+window.addEventListener('offline', checkNetwork);
+checkNetwork();
+
+function getAccounts() {
+  try {
+    const raw = localStorage.getItem('anka_accounts');
+    return raw ? JSON.parse(raw) : [{ name: 'Misafir', email: 'misafir@ankawh.local', avatar: '' }];
+  } catch(e) { return [{ name: 'Misafir', email: 'misafir@ankawh.local', avatar: '' }]; }
+}
+
+function setAccounts(list) { localStorage.setItem('anka_accounts', JSON.stringify(list)); window.dispatchEvent(new Event('storage_update')); }
+
+function getCurrentUser() {
+  try {
+    const raw = localStorage.getItem('anka_current_user');
+    return raw ? JSON.parse(raw) : getAccounts()[0];
+  } catch(e) { return getAccounts()[0]; }
+}
+
+function setCurrentUser(user) { localStorage.setItem('anka_current_user', JSON.stringify(user)); window.dispatchEvent(new Event('storage_update')); }
+
+function updateAuthUI() {
+  const user = getCurrentUser();
+  const avatarEl = document.getElementById('profileAvatar');
+  const nameEl = document.getElementById('profileName');
+  const statusEl = document.getElementById('profileStatusText');
+
+  if (user && user.name !== 'Misafir') {
+    nameEl.innerText = user.name;
+    statusEl.innerText = 'Aktif Profil';
+    statusEl.style.color = '#10b981';
+    if (user.avatar) {
+      avatarEl.innerHTML = `<img src="${user.avatar}" onerror="this.parentElement.innerHTML='${user.name[0].toUpperCase()}'">`;
+    } else {
+      avatarEl.innerHTML = user.name[0].toUpperCase();
+      avatarEl.style.background = '#ff4757';
+    }
+  } else {
+    nameEl.innerText = 'Misafir';
+    statusEl.innerText = 'Giriş Yapılmadı';
+    statusEl.style.color = '#a1a1aa';
+    avatarEl.innerHTML = 'M';
+    avatarEl.style.background = '#27272a';
+  }
+}
+
+function renderAccountList() {
+  const listEl = document.getElementById('accountList');
+  listEl.innerHTML = '';
+  const accounts = getAccounts();
+  const current = getCurrentUser();
+
+  accounts.forEach((acc, idx) => {
+    const item = document.createElement('div');
+    item.className = 'account-item';
+    const isCurrent = current && current.email === acc.email;
+    item.innerHTML = `
+      <div class="account-info">
+        <div style="width:38px; height:38px; border-radius:50%; background:#ff4757; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px; overflow:hidden;">
+          ${acc.avatar ? `<img src="${acc.avatar}" style="width:100%;height:100%;object-fit:cover;">` : acc.name[0].toUpperCase()}
+        </div>
+        <div>
+          <div style="font-weight:600; font-size:15px; color:#f4f4f5;">${acc.name}</div>
+          <div style="color:#a1a1aa; font-size:12px; margin-top:2px;">${acc.email || 'Yerel Profil'}</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        ${isCurrent ? '<span style="color:#10b981; font-size:13px; font-weight:600; display:flex; align-items:center; margin-right:8px;">Aktif</span>' : `<button onclick="switchAccount(${idx})" style="background:#3b82f6; border:none; color:#fff; padding:8px 14px; border-radius:10px; cursor:pointer; font-size:12px; font-weight:600; transition:0.2s;">Seç</button>`}
+        <button onclick="removeAccount(${idx})" style="background:#27272a; border:none; color:#ff4757; padding:8px 14px; border-radius:10px; cursor:pointer; font-size:12px; font-weight:600; transition:0.2s;">Kaldır</button>
+      </div>
+    `;
+    listEl.appendChild(item);
+  });
+}
+
+function getEngineLoginUrl() {
+  const engineId = localStorage.getItem('set_search-engine') || 'google';
+  switch (engineId) {
+    case 'google': return 'https://accounts.google.com/ServiceLogin?continue=https://www.google.com';
+    case 'yandex': return 'https://passport.yandex.com.tr/auth';
+    case 'bing': return 'https://login.live.com/login.srf';
+    case 'duckduckgo': return 'https://duckduckgo.com/';
+    default: return 'https://accounts.google.com/ServiceLogin?continue=https://www.google.com';
+  }
+}
+
+function handleEngineLoginRedirect() {
+  window.location.href = getEngineLoginUrl();
+}
+
+function openAuthView() {
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('authView').classList.add('active');
+  renderAccountList();
+  const current = getCurrentUser();
+  if (current) {
+    document.getElementById('editName').value = current.name;
+    document.getElementById('editEmail').value = current.email || '';
+    document.getElementById('editAvatar').value = current.avatar || '';
+  }
+  document.getElementById('engineSelect').value = localStorage.getItem('set_search-engine') || 'google';
+}
+
+function closeAuthView() {
+  document.getElementById('authView').classList.remove('active');
+  document.getElementById('homeView').style.display = 'flex';
+  updateAuthUI();
+  initUI();
+}
+
+function changeSearchEngine(val) {
+  localStorage.setItem('set_search-engine', val);
+  window.dispatchEvent(new Event('storage_update'));
+  initUI();
+}
+
+function switchAccount(idx) {
+  const accounts = getAccounts();
+  if (accounts[idx]) {
+    setCurrentUser(accounts[idx]);
+    renderAccountList();
+    updateAuthUI();
+  }
+}
+
+function removeAccount(idx) {
+  const accounts = getAccounts();
+  accounts.splice(idx, 1);
+  if (accounts.length === 0) {
+    accounts.push({ name: 'Misafir', email: 'misafir@ankawh.local', avatar: '' });
+  }
+  setAccounts(accounts);
+  setCurrentUser(accounts[0]);
+  renderAccountList();
+  updateAuthUI();
+}
+
+function loadLocalImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('editAvatar').value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveProfile() {
+  const current = getCurrentUser();
+  const newName = document.getElementById('editName').value.trim();
+  const newEmail = document.getElementById('editEmail').value.trim();
+  const newAvatar = document.getElementById('editAvatar').value.trim();
+  
+  if (!newName) return;
+  
+  current.name = newName;
+  current.email = newEmail;
+  current.avatar = newAvatar;
+  setCurrentUser(current);
+
+  const accounts = getAccounts();
+  const idx = accounts.findIndex(a => a.email === current.email || a.name === current.name);
+  if (idx !== -1) {
+    accounts[idx] = current;
+  } else {
+    accounts.push(current);
+  }
+  setAccounts(accounts);
+  renderAccountList();
+  updateAuthUI();
+}
+
+function getSetting(id, def){
+  const v = localStorage.getItem('set_' + id);
+  return v === null ? def : v;
+}
+
+function getShortcuts(){
+  try {
+    const raw = localStorage.getItem('anka_shortcuts');
+    if (!raw) { localStorage.setItem('anka_shortcuts', JSON.stringify(DEFAULTS)); return DEFAULTS.slice(); }
+    return JSON.parse(raw);
+  } catch(e){ return DEFAULTS.slice(); }
+}
+function setShortcuts(list){ localStorage.setItem('anka_shortcuts', JSON.stringify(list)); window.dispatchEvent(new Event('storage_update')); }
+
+function favicon(url){
+  try { const u = new URL(url); return 'https://www.google.com/s2/favicons?sz=64&domain=' + u.hostname; }
+  catch(e){ return ''; }
+}
+
+function renderGrid(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const list = getShortcuts();
+  list.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'tile';
+    el.innerHTML = `
+      <div class="del" onclick="event.stopPropagation(); removeShortcut(${i})">✕</div>
+      <div class="icon-box"><img src="${favicon(s.url)}" onerror="this.style.display='none'"></div>
+      <div class="name">${s.name}</div>`;
+    el.onclick = () => { window.location.href = s.url; };
+    grid.appendChild(el);
+  });
+  const add = document.createElement('div');
+  add.className = 'tile add';
+  add.innerHTML = `<div class="icon-box">＋</div><div class="name">Ekle</div>`;
+  add.onclick = openModal;
+  grid.appendChild(add);
+}
+
+function openModal(){ document.getElementById('modal-bg').style.display = 'flex'; document.getElementById('m-name').focus(); }
+function closeModal(){ document.getElementById('modal-bg').style.display = 'none'; document.getElementById('m-name').value=''; document.getElementById('m-url').value=''; }
+function saveShortcut(){
+  let name = document.getElementById('m-name').value.trim();
+  let url = document.getElementById('m-url').value.trim();
+  if (!name || !url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const list = getShortcuts();
+  list.push({ name, url });
+  setShortcuts(list);
+  closeModal();
+  renderGrid();
+}
+function removeShortcut(i){
+  const list = getShortcuts();
+  list.splice(i,1);
+  setShortcuts(list);
+  renderGrid();
+}
+
+function toggleAI(){
+  const el = document.getElementById('aiToggle');
+  const active = el.classList.toggle('active');
+  localStorage.setItem('ai-mode-active', active ? 'true' : 'false');
+  window.dispatchEvent(new Event('storage_update'));
+}
+
+const ENGINES = {
+  google:     { name:'Google',    tpl:'https://www.google.com/search?q=%s' },
+  yandex:     { name:'Yandex',    tpl:'https://yandex.com.tr/search/?text=%s' },
+  bing:       { name:'Bing',      tpl:'https://www.bing.com/search?q=%s' },
+  duckduckgo:{ name:'DuckDuckGo',tpl:'https://duckduckgo.com/?q=%s' }
+};
+const AI_PROVIDERS = {
+  'google-ai': { tpl:'https://www.google.com/search?q=%s&udm=50' },
+  chatgpt:     { tpl:'https://chatgpt.com/?q=%s' },
+  gemini:      { tpl:'https://gemini.google.com/app' },
+  perplexity:  { tpl:'https://www.perplexity.ai/search?q=%s' }
+};
+
+function initUI(){
+  const engineId = getSetting('search-engine', 'google');
+  const engine = ENGINES[engineId] || ENGINES.google;
+  document.getElementById('engineLabel').innerText = engineId === 'custom' ? 'Özel' : engine.name;
+  const aiActive = getSetting('ai-mode-active', 'false') === 'true' || localStorage.getItem('ai-mode-active') === 'true';
+  const aiToggle = document.getElementById('aiToggle');
+  if (aiActive) {
+    aiToggle.classList.add('active');
+  } else {
+    aiToggle.classList.remove('active');
+  }
+  updateAuthUI();
+}
+
+function buildSearchUrl(query){
+  const aiActive = localStorage.getItem('ai-mode-active') === 'true';
+  if (aiActive) {
+    const provId = getSetting('ai-provider', 'google-ai');
+    const prov = AI_PROVIDERS[provId] || AI_PROVIDERS['google-ai'];
+    return prov.tpl.replace('%s', encodeURIComponent(query));
+  }
+  const engineId = getSetting('search-engine', 'google');
+  if (engineId === 'custom') {
+    const custom = getSetting('custom-search-url', 'https://www.google.com/search?q=%s');
+    return custom.replace('%s', encodeURIComponent(query));
+  }
+  const engine = ENGINES[engineId] || ENGINES.google;
+  return engine.tpl.replace('%s', encodeURIComponent(query));
+}
+
+document.getElementById('q').addEventListener('keypress', (e) => {
+  if (e.key !== 'Enter') return;
+  const val = e.target.value.trim();
+  if (!val) return;
+  const looksLikeUrl = /^https?:\/\//i.test(val) || (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(val) && !val.includes(' '));
+  if (looksLikeUrl) {
+    window.location.href = /^https?:\/\//i.test(val) ? val : 'https://' + val;
+  } else {
+    window.location.href = buildSearchUrl(val);
+  }
+});
+
+// Anlık senkronizasyon (storage_update olay dinleyicisi)
+window.addEventListener('storage_update', () => {
+  initUI();
+  renderGrid();
+});
+
+window.addEventListener('storage', (e) => {
+  initUI();
+  renderGrid();
+});
+
+if (window.location.protocol === 'file:') {
+    window.history.replaceState({}, '', '/');
+}
+
+renderGrid();
+initUI();
+</script>
+</body>
+</html>
