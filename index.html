@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Anka Web</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -32,54 +32,45 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            transition: background 0.3s, color 0.3s;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        #ai-mode-btn {
-            display: flex; align-items: center; gap: 6px; padding: 0 14px; height: 34px;
-            background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 18px;
-            color: var(--text-secondary); font-size: 12px; font-weight: 700; cursor: pointer;
-            white-space: nowrap; transition: .2s; margin-right: 8px;
+        #toast-stack {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000001;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
         }
-        #ai-mode-btn.active { background: linear-gradient(90deg,#ff4757,#ff7a45); color:#fff; border-color:transparent; box-shadow:0 0 14px rgba(255,71,87,.35); }
-        #toast-stack { position:fixed; top:50px; left:50%; transform:translateX(-50%); z-index:1000001; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
-        .toast { background:var(--bg-secondary); border:1px solid var(--border-color); color:var(--text-color); padding:10px 16px; border-radius:10px; font-size:13px; box-shadow:0 10px 30px rgba(0,0,0,.4); opacity:0; transform:translateY(-8px); transition:.25s; }
-        .toast.show { opacity:1; transform:translateY(0); }
-        .toast.error { border-color:#f38ba8; color:#ffd7e0; }
 
-        #titlebar { background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; height: 42px; user-select: none; -webkit-app-region: drag; }
-        #top-tabs-container { display: flex; align-items: center; gap: 6px; padding-left: 8px; flex: 1; overflow: hidden; -webkit-app-region: no-drag; }
-        #window-controls { display: flex; -webkit-app-region: no-drag; }
-        .w-control-btn { width: 45px; height: 42px; background: transparent; border: none; color: var(--text-color); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
-        .w-control-btn:hover { background: var(--bg-tertiary); }
-        #close-btn:hover { background: #e81123; color: white; }
+        .toast {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.4);
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
 
-        #app-container { display: flex; height: calc(100vh - 42px); width: 100vw; overflow: hidden; }
-        #sidebar { width: 64px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 10px; z-index: 10; }
-        .side-btn { width: 42px; height: 42px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); transition: 0.2s; background: transparent; border: none; font-size: 10px; gap: 2px; }
-        .side-btn i { font-size: 16px; font-style: normal; }
-        .side-btn span { font-size: 8px; font-weight: 700; }
-        .side-btn:hover, .side-btn.active { background: var(--bg-tertiary); color: var(--text-color); }
-        .logo { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; object-fit: cover; margin-bottom: 10px; }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        #main-view { flex: 1; display: flex; flex-direction: column; background: var(--bg-primary); overflow: hidden; }
-        #toolbar { height: 48px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 0 12px; gap: 8px; }
-        .nav-tool-btn { width: 34px; height: 34px; border-radius: 8px; background: transparent; border: none; color: var(--text-color); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 14px; }
-        .nav-tool-btn:hover { background: var(--bg-tertiary); }
-        #url-input { flex: 1; height: 34px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 17px; padding: 0 16px; color: var(--text-color); font-size: 13px; outline: none; transition: 0.2s; }
-        #url-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.2); }
+        .toast.error {
+            border-color: #f38ba8;
+            color: #ffd7e0;
+        }
 
-        #wv-container { flex: 1; display: flex; position: relative; background: var(--bg-primary); overflow: hidden; }
-
-        .tab { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; max-width: 160px; min-width: 100px; cursor: pointer; user-select: none; font-size: 12px; color: var(--text-secondary); transition: 0.2s; }
-        .tab.active { background: var(--bg-secondary); color: var(--text-color); border-color: var(--accent); }
-        .tab-icon { width: 14px; height: 14px; border-radius: 3px; object-fit: contain; }
-        .tab-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-        
-        #new-tab-btn { width: 32px; height: 32px; background: transparent; border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s; }
-        #new-tab-btn:hover { background: var(--bg-tertiary); color: var(--text-color); border-color: var(--text-color); }
-        #tab-dropdown-btn { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-        #tab-dropdown-btn:hover { background: var(--bg-tertiary); color: var(--text-color); }
+        .side-btn.active { color: var(--accent); }
     </style>
 </head>
 <body>
@@ -90,17 +81,17 @@
             <div style="position: relative; display: inline-block;">
                 <button id="tab-dropdown-btn" onclick="toggleTabDropdown(event)" title="Sekmeler Listesi">▼</button>
                 <div id="tab-dropdown-menu" style="display: none; position: fixed; top: 45px; left: 12px; width: 300px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.8); z-index: 9999999; padding: 10px; flex-direction: column; gap: 8px; backdrop-filter: blur(16px);">
-                    <input type="text" id="tab-search-input" placeholder="Sekmelerde ara..." oninput="filterTabs(this.value)" style="width: 100%; height: 36px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0 12px; color: var(--text-color); font-size: 13px; outline: none; transition: all 0.2s;">
+                    <input type="text" id="tab-search-input" placeholder="Sekmelerde ara..." oninput="filterTabs(this.value)" style="width: 100%; height: 36px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0 12px; color: var(--text-color); font-size: 13px; outline: none;">
                     <div id="tab-list-dropdown" style="display: flex; flex-direction: column; gap: 4px; max-height: 250px; overflow-y: auto; scrollbar-width: thin;"></div>
                 </div>
             </div>
             <div id="tab-bar"></div>
-            <button id="new-tab-btn" onclick="createNewTab(getHomeUrl())" title="Yeni Sekme">＋</button>
+            <button id="new-tab-btn" onclick="createNewTab(getHomeUrl())" title="Yeni Sekme (Ctrl+T)">＋</button>
         </div>
         <div id="window-controls">
-            <button class="w-control-btn" id="min-btn">-</button>
-            <button class="w-control-btn" id="max-btn">▢</button>
-            <button class="w-control-btn" id="close-btn">×</button>
+            <button class="w-control-btn" id="min-btn" title="Küçült">-</button>
+            <button class="w-control-btn" id="max-btn" title="Büyüt">▢</button>
+            <button class="w-control-btn" id="close-btn" title="Kapat">×</button>
         </div>
     </div>
 
@@ -109,82 +100,202 @@
             <img src="assets/icons/logo.png" class="logo" onclick="location.reload()" alt="Logo">
             <div style="flex:1"></div>
 
-            <div class="side-btn" id="btn-paint" onclick="togglePaintMenu()"><i>✏️</i><span>KALEM</span></div>
-            <div class="side-btn" id="btn-keyboard" onclick="toggleKeyboard()"><i>⌨️</i><span>KLAVYE</span></div>
+            <div class="side-btn" id="btn-paint" onclick="togglePaintMenu()"><i>✎</i><span>KALEM</span></div>
+            <div class="side-btn" id="btn-keyboard" onclick="toggleKeyboard()"><i>⌨</i><span>KLAVYE</span></div>
             <div class="side-btn" onclick="createNewTab(getHomeUrl())"><i>➕</i><span>SEKME</span></div>
-            <div class="side-btn" id="btn-split" onclick="toggleSplitScreen()"><i>🌓</i><span>BÖL</span></div>
-            <div class="side-btn" onclick="openAISession()"><i>🤖</i><span>AI</span></div>
-            <div class="side-btn" id="btn-limit" onclick="toggleLimit()"><i>🔒</i><span>LİMİT</span></div>
+            <div class="side-btn" id="btn-split" onclick="toggleSplitScreen()"><i>⊞</i><span>BÖL</span></div>
+            <div class="side-btn" onclick="openAISession()"><i>✦</i><span>AI</span></div>
+            <div class="side-btn" id="btn-limit" onclick="toggleLimit()"><i>🔒︎</i><span>LİMİT</span></div>
 
             <div style="flex:1"></div>
 
-            <div class="side-btn" onclick="toggleHelp()"><i>❓</i><span>YARDIM</span></div>
-            <div class="side-btn" onclick="toggleSettings()"><i>⚙️</i><span>AYARLAR</span></div>
+            <div class="side-btn" onclick="toggleHelp()"><i>?</i><span>YARDIM</span></div>
+            <div class="side-btn" onclick="toggleSettings()"><i>⚙</i><span>AYARLAR</span></div>
         </div>
 
         <div id="main-view">
+
             <div id="toolbar">
-                <button class="nav-tool-btn" onclick="goBack()" title="Geri">◀</button>
-                <button class="nav-tool-btn" onclick="goForward()" title="İleri">▶</button>
-                <button class="nav-tool-btn" onclick="reloadTab()" title="Yenile">🔄</button>
+                <button class="nav-tool-btn" onclick="goBack()" title="Geri (Alt+←)">◀</button>
+                <button class="nav-tool-btn" onclick="goForward()" title="İleri (Alt+→)">▶</button>
+                <button class="nav-tool-btn" onclick="reloadTab()" title="Yenile (Ctrl+R)">⟳</button>
+
                 <input type="text" id="url-input" placeholder="Güvenli Arama...">
-                <div id="ai-mode-btn" onclick="toggleAiMode()" title="AI Modu">✨ AI</div>
+
+                <button id="downloads-btn" class="nav-tool-btn" onclick="openDownloadsPage()" title="İndirilenler">
+                    ⭳
+                    <span class="dl-badge" id="dl-badge"></span>
+                </button>
+                <button id="ai-mode-btn" class="nav-tool-btn" onclick="toggleAiMode()" title="AI Modu (Ctrl+Shift+A)">
+                    <span>✦</span><span class="ai-label">AI</span>
+                </button>
             </div>
+
             <div id="wv-container"></div>
-        </div>
-    </div>
-</div>
 
-<div id="update-banner" class="glass-panel" style="display: none; position: fixed; top: 80px; right: 20px; width: 340px; background: rgba(17, 17, 27, 0.95); backdrop-filter: blur(16px); color: #cdd6f4; padding: 20px; border-radius: 16px; border: 1px solid rgba(243, 139, 168, 0.3); z-index: 99999; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 20px 50px rgba(0,0,0,0.8); box-sizing: border-box; flex-direction: column;">
-    <div id="update-step-1">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <strong style="color: #f38ba8; font-size: 15px; display: flex; align-items: center; gap: 6px;">🚀 Güncelleme Mevcut</strong>
-            <span style="font-size: 12px; background: #313244; padding: 4px 8px; border-radius: 6px; color: #a6adc8; font-weight: 500; border: 1px solid #45475a;">Anka Web</span>
-        </div>
-        <p id="update-info" style="font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; color: #bac2de;">Daha hızlı ve kararlı bir deneyim için yeni bir güncelleme hazır.</p>
-        <div id="progress-container" style="display: none; width: 100%; background: #313244; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 16px;">
-            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f38ba8, #fab387); transition: width 0.1s linear;"></div>
-        </div>
-        <div id="update-actions" style="display: flex; gap: 10px;">
-            <button id="later-btn" style="flex: 1; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Daha Sonra</button>
-            <button id="update-btn" style="flex: 2; padding: 10px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Şimdi Güncelle</button>
         </div>
     </div>
-    <div id="update-step-2" style="display: none; text-align: center;">
-        <strong style="color: #fab387; font-size: 15px; display: block; margin-bottom: 10px;">⚠️ Kapatma İzni Gerekli</strong>
-        <button id="close-app-btn" style="width: 100%; padding: 12px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Programı Kapat</button>
-    </div>
-    <div id="update-step-error" style="display: none;">
-        <strong style="color: #f38ba8; font-size: 15px; display: block; margin-bottom: 10px;">❌ Hata Oluştu</strong>
-        <p id="error-message" style="font-size: 13px; line-height: 1.5; margin: 0 0 12px 0; color: #f38ba8; background: rgba(243, 139, 168, 0.1); padding: 8px; border-radius: 6px; font-family: monospace; border: 1px solid rgba(243, 139, 168, 0.2);"></p>
-        <button id="error-close-btn" style="width: 100%; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Kapat</button>
-    </div>
-</div>
 
-<div id="toast-stack"></div>
-<div id="notification-container" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 1000000; pointer-events: none;"></div>
+    <div id="update-banner" class="glass-panel" style="display: none; position: fixed; top: 80px; right: 20px; width: 340px; background: rgba(17, 17, 27, 0.95); backdrop-filter: blur(16px); color: #cdd6f4; padding: 20px; border-radius: 16px; border: 1px solid rgba(243, 139, 168, 0.3); z-index: 99999; font-family: 'Segoe UI', system-ui, sans-serif; box-shadow: 0 20px 50px rgba(0,0,0,0.8); box-sizing: border-box; flex-direction: column;">
+        <div id="update-step-1">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <strong style="color: #f38ba8; font-size: 15px; display: flex; align-items: center; gap: 6px;">🚀 Güncelleme Mevcut</strong>
+                <span style="font-size: 12px; background: #313244; padding: 4px 8px; border-radius: 6px; color: #a6adc8; font-weight: 500; border: 1px solid #45475a;">Anka Web</span>
+            </div>
+            <p id="update-info" style="font-size: 13px; line-height: 1.5; margin: 0 0 16px 0; color: #bac2de;">Daha hızlı ve kararlı bir deneyim için yeni bir güncelleme hazır.</p>
+            <div id="progress-container" style="display: none; width: 100%; background: #313244; height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 16px;">
+                <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f38ba8, #fab387); transition: width 0.1s linear;"></div>
+            </div>
+            <div id="update-actions" style="display: flex; gap: 10px;">
+                <button id="later-btn" style="flex: 1; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Daha Sonra</button>
+                <button id="update-btn" style="flex: 2; padding: 10px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Şimdi Güncelle</button>
+            </div>
+        </div>
+        <div id="update-step-2" style="display: none; text-align: center;">
+            <strong style="color: #fab387; font-size: 15px; display: block; margin-bottom: 10px;">⚠️ Kapatma İzni Gerekli</strong>
+            <button id="close-app-btn" style="width: 100%; padding: 12px; background: #f38ba8; border: none; color: #11111b; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 13px;">Programı Kapat</button>
+        </div>
+        <div id="update-step-error" style="display: none;">
+            <strong style="color: #f38ba8; font-size: 15px; display: block; margin-bottom: 10px;">❌ Hata Oluştu</strong>
+            <p id="error-message" style="font-size: 13px; line-height: 1.5; margin: 0 0 12px 0; color: #f38ba8; background: rgba(243, 139, 168, 0.1); padding: 8px; border-radius: 6px; font-family: monospace; border: 1px solid rgba(243, 139, 168, 0.2);"></p>
+            <button id="error-close-btn" style="width: 100%; padding: 10px; background: #313244; border: 1px solid #45475a; color: #cdd6f4; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Kapat</button>
+        </div>
+    </div>
+
+    <div id="toast-stack"></div>
+    <div id="notification-container" style="position: fixed; top: 50px; left: 50%; transform: translateX(-50%); z-index: 1000000; pointer-events: none;"></div>
+
+    <div id="paint-menu">
+        <div id="paint-handle" style="cursor: move; background: var(--accent); margin: -15px -15px 10px -15px; padding: 8px; border-radius: 14px 14px 0 0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; gap: 5px; align-items: center; margin-left: 10px;">
+                <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+                <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+                <span style="width: 4px; height: 4px; background: white; border-radius: 50%;"></span>
+            </div>
+            <button onclick="togglePaintMenu()" style="background: rgba(0,0,0,0.2); border: none; color: white; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center;">✕</button>
+        </div>
+
+        <div class="tool-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 5px;">
+            <div class="t-btn" onclick="setBoardMode('transparent')" title="Site">🌐</div>
+            <div class="t-btn" onclick="setBoardMode('white')" title="Beyaz">⬜</div>
+            <div class="t-btn" onclick="setBoardMode('lined')" title="Çizgili">📝</div>
+            <div class="t-btn" onclick="setBoardMode('grid')" title="Kareli">🏁</div>
+        </div>
+
+        <div class="tool-row">
+            <div class="t-btn active" id="t-pen" onclick="setTool('pen')">🖊️</div>
+            <div class="t-btn" id="t-neon" onclick="setTool('neon')">✨</div>
+            <div class="t-btn" id="t-eraser" onclick="setTool('eraser')">🧽</div>
+        </div>
+
+        <div class="tool-row">
+            <div class="t-btn" onclick="toggleMathTool('ruler')">📏</div>
+            <div class="t-btn" onclick="toggleMathTool('protractor')">📐</div>
+            <div class="t-btn" onclick="undo()">↩️</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,0.3); padding:10px; border-radius:12px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+                <input type="color" id="p-color" value="#ff4757" style="width:36px; height:30px; border:none; background:none; cursor:pointer;">
+                <input type="range" id="p-width" min="1" max="50" value="4" style="flex:1; accent-color:var(--accent);">
+            </div>
+            <button onclick="clearCanvas()" style="background:#ff4757; border:none; color:white; padding:6px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:10px;">TEMİZLE</button>
+        </div>
+    </div>
+
+    <div id="ruler" class="math-tool" style="width:550px; height:90px; top:200px; left:300px;">
+        <div class="tool-ctrl">
+            <div class="c-btn" onmousedown="toolRotate(event, 'ruler')">🔄</div>
+            <div class="c-btn" onmousedown="toolScale(event, 'ruler')">↔️</div>
+            <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
+        </div>
+        <img src="assets/icons/cetvel.png" alt="Cetvel" style="width:100%; height:100%;">
+    </div>
+
+    <div id="protractor" class="math-tool" style="width:350px; height:175px; top:400px; left:400px;">
+        <div class="tool-ctrl">
+            <div class="c-btn" onmousedown="toolRotate(event, 'protractor')">🔄</div>
+            <div class="c-btn" onmousedown="toolScale(event, 'protractor')">↔️</div>
+            <div class="c-btn" onclick="this.parentElement.parentElement.style.display='none'">❌</div>
+        </div>
+        <img src="assets/icons/açıölçer.png" alt="Açıölçer" style="width:100%; height:100%;">
+    </div>
+
+    <div id="keyboard">
+        <div class="kb-row" id="row1"></div>
+        <div class="kb-row" id="row2"></div>
+        <div class="kb-row" id="row3"></div>
+        <div class="kb-row">
+            <div class="kb-key" style="width:400px" onclick="typeChar(' ')">BOŞLUK</div>
+            <div class="kb-key" style="background:#e74c3c" onclick="toggleKeyboard()">KAPAT</div>
+        </div>
+    </div>
+
+    <div id="draw-layer"><canvas id="main-canvas"></canvas></div>
+</div>
 
 <script>
     const { ipcRenderer } = require('electron');
-
-    function applySavedTheme() {
-        const theme = localStorage.getItem('set_theme') || 'dark';
-        if (theme === 'light') {
-            document.body.classList.add('light-theme');
-        } else {
-            document.body.classList.remove('light-theme');
-        }
-    }
-    applySavedTheme();
 
     function getSetting(id, def) {
         const v = localStorage.getItem('set_' + id);
         return v === null ? def : v;
     }
 
+    function setSetting(id, value) {
+        try {
+            localStorage.setItem('set_' + id, value);
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    const themeChannel = new BroadcastChannel('theme_settings');
+
+    function applyThemeState(isDark) {
+        document.body.classList.toggle('light-theme', !isDark);
+        const icon = document.getElementById('theme-icon');
+        const btn = document.getElementById('btn-theme');
+        if (btn) btn.classList.toggle('active', !isDark);
+    }
+
+    function applySavedTheme() {
+        const stored = localStorage.getItem('set_dark-mode');
+        const isDark = stored === null ? true : stored === 'true';
+        applyThemeState(isDark);
+    }
+    applySavedTheme();
+
+    function toggleTheme() {
+        const isCurrentlyDark = !document.body.classList.contains('light-theme');
+        const nextIsDark = !isCurrentlyDark;
+        setSetting('dark-mode', nextIsDark ? 'true' : 'false');
+        applyThemeState(nextIsDark);
+        themeChannel.postMessage({ id: 'dark-mode', val: nextIsDark });
+        if (typeof showToast === 'function') showToast(nextIsDark ? 'Koyu tema açıldı' : 'Açık tema açıldı');
+        const settingsToggle = document.querySelector('.settings-toggle input');
+        const darkRow = document.getElementById('status-dark-mode');
+    }
+
+    themeChannel.onmessage = (event) => {
+        if (event.data && event.data.id === 'dark-mode') {
+            applyThemeState(event.data.val);
+        }
+    };
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'set_dark-mode') applySavedTheme();
+    });
+
+    function openDownloadsFolder() {
+        safeIpcSend('open-downloads-folder');
+    }
+
+    let toastTimer = null;
     function showToast(message, type = 'info') {
         const stack = document.getElementById('toast-stack');
-        if (!stack) { console.log(message); return; }
+        if (!stack) { return; }
         const el = document.createElement('div');
         el.className = 'toast' + (type === 'error' ? ' error' : '');
         el.textContent = message;
@@ -196,8 +307,6 @@
         }, 3500);
     }
 
-    window.addEventListener('error', (e) => {
-    });
     window.addEventListener('unhandledrejection', (e) => {
         showToast('İşlem tamamlanamadı: ' + (e.reason && e.reason.message ? e.reason.message : 'bilinmeyen hata'), 'error');
     });
@@ -211,6 +320,39 @@
             return false;
         }
     }
+
+    let aiModeActive = getSetting('ai-mode-active', 'false') === 'true';
+
+    function isAiModeActive() {
+        return aiModeActive;
+    }
+
+    function setAiMode(state) {
+        aiModeActive = !!state;
+        const btn = document.getElementById('ai-mode-btn');
+        if (btn) btn.classList.toggle('active', aiModeActive);
+        setSetting('ai-mode-active', aiModeActive ? 'true' : 'false');
+        safeIpcSend('ai-mode-changed', aiModeActive);
+    }
+
+    let aiToggleLock = false;
+    function toggleAiMode() {
+        if (aiToggleLock) return;
+        aiToggleLock = true;
+        setAiMode(!aiModeActive);
+        showToast(aiModeActive ? 'AI Modu Açık' : 'AI Modu Kapalı');
+        setTimeout(() => { aiToggleLock = false; }, 180);
+    }
+
+    function getHomeUrl() {
+        const startup = getSetting('startup-page', 'home');
+        if (startup === 'blank') return 'about:blank';
+        return 'newtab.html';
+    }
+
+    document.getElementById('min-btn')?.addEventListener('click', () => safeIpcSend('window-minimize'));
+    document.getElementById('max-btn')?.addEventListener('click', () => safeIpcSend('window-maximize'));
+    document.getElementById('close-btn')?.addEventListener('click', () => safeIpcSend('window-close'));
 
     const banner = document.getElementById('update-banner');
     const step1 = document.getElementById('update-step-1');
@@ -226,10 +368,6 @@
     const errorMessage = document.getElementById('error-message');
 
     let cachedFilePath = '';
-
-    document.getElementById('min-btn')?.addEventListener('click', () => safeIpcSend('window-minimize'));
-    document.getElementById('max-btn')?.addEventListener('click', () => safeIpcSend('window-maximize'));
-    document.getElementById('close-btn')?.addEventListener('click', () => safeIpcSend('window-close'));
 
     ipcRenderer.on('update-available', (event, data) => {
         banner.style.display = 'flex';
@@ -255,6 +393,7 @@
     });
 
     ipcRenderer.on('download-progress', (event, percent) => {
+        if (typeof percent !== 'number') return;
         if (updateBtn.style.display !== 'none') {
             updateBtn.style.display = 'none';
             progressContainer.style.display = 'block';
@@ -291,12 +430,6 @@
         banner.style.display = 'none';
     });
 
-    function getHomeUrl() {
-        const startup = getSetting('startup-page', 'home');
-        if (startup === 'blank') return 'about:blank';
-        return 'newtab.html';
-    }
-
     function toggleTabDropdown(e) {
         if (e) e.stopPropagation();
         const menu = document.getElementById('tab-dropdown-menu');
@@ -311,18 +444,25 @@
         }
     }
 
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, (c) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[c]));
+    }
+
     function renderTabListDropdown(filter = '') {
         const listContainer = document.getElementById('tab-list-dropdown');
         listContainer.innerHTML = '';
         const tabs = document.querySelectorAll('.tab');
         let matchedCount = 0;
+        const fragment = document.createDocumentFragment();
 
         tabs.forEach(tab => {
             const id = tab.id.replace('btn-', '');
             const titleEl = tab.querySelector('.tab-title');
             const title = titleEl ? titleEl.innerText : 'Yeni Sekme';
             const vw = document.getElementById(id);
-            const url = vw ? vw.getURL() : '';
+            const url = vw && vw.getURL ? vw.getURL() : '';
 
             if (filter && !title.toLowerCase().includes(filter.toLowerCase()) && !url.toLowerCase().includes(filter.toLowerCase())) {
                 return;
@@ -330,11 +470,17 @@
 
             matchedCount++;
             const item = document.createElement('div');
-            item.style.cssText = `display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: ${id === activeTabId ? 'rgba(255, 71, 87, 0.2)' : 'transparent'}; color: ${id === activeTabId ? '#ff4757' : 'var(--text-color)'};`;
-            item.innerHTML = `<span style="font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${title}</span>`;
-            item.onclick = () => switchTab(id);
-            listContainer.appendChild(item);
+            const isActive = id === (typeof activeTabId !== 'undefined' ? activeTabId : null);
+            item.style.cssText = `display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: background-color 0.15s ease; background: ${isActive ? 'rgba(255, 71, 87, 0.2)' : 'transparent'}; color: ${isActive ? '#ff4757' : 'var(--text-color)'};`;
+            const label = document.createElement('span');
+            label.style.cssText = 'font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
+            label.textContent = title;
+            item.appendChild(label);
+            item.addEventListener('click', () => switchTab(id));
+            fragment.appendChild(item);
         });
+
+        listContainer.appendChild(fragment);
 
         if (matchedCount === 0) {
             listContainer.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--text-secondary); font-size: 13px;">Sekme bulunamadı</div>`;
@@ -353,32 +499,145 @@
         }
     });
 
-    function togglePaintMenu() {}
-    function toggleKeyboard() {}
-    function toggleSplitScreen() {}
-    function toggleLimit() {}
-    function toggleHelp() {}
-    function toggleSettings() {}
+    function togglePaintMenu() {
+        const menu = document.getElementById('paint-menu');
+        if (!menu) return;
+        menu.classList.toggle('open');
+        document.getElementById('btn-paint')?.classList.toggle('active', menu.classList.contains('open'));
+    }
+
+    function toggleKeyboard() {
+        const kb = document.getElementById('keyboard');
+        if (!kb) return;
+        kb.classList.toggle('open');
+        document.getElementById('btn-keyboard')?.classList.toggle('active', kb.classList.contains('open'));
+    }
+
+    function toggleSplitScreen() {
+        if (typeof window.__toggleSplitScreen === 'function') {
+            window.__toggleSplitScreen();
+        }
+    }
+
+    function toggleLimit() {
+        if (typeof window.__toggleLimit === 'function') {
+            window.__toggleLimit();
+        }
+    }
+
+    function toggleHelp() {
+        if (typeof window.__toggleHelp === 'function') {
+            window.__toggleHelp();
+        }
+    }
+
+    function toggleSettings() {
+        if (typeof window.__toggleSettings === 'function') {
+            window.__toggleSettings();
+        }
+    }
+
+    window.addEventListener('keydown', (e) => {
+        const mod = e.ctrlKey || e.metaKey;
+        if (mod && e.key.toLowerCase() === 't') {
+            e.preventDefault();
+            createNewTab(getHomeUrl());
+        } else if (mod && e.shiftKey && e.key.toLowerCase() === 't') {
+            e.preventDefault();
+            if (typeof reopenClosedTab === 'function') reopenClosedTab();
+        } else if (mod && e.shiftKey && e.key.toLowerCase() === 'n') {
+            e.preventDefault();
+            if (typeof createIncognitoTab === 'function') createIncognitoTab();
+        } else if (mod && e.key.toLowerCase() === 'w') {
+            e.preventDefault();
+            if (typeof closeTab === 'function' && typeof activeTabId !== 'undefined') {
+                closeTab(activeTabId, { stopPropagation(){} });
+            }
+        } else if (mod && e.key.toLowerCase() === 'l') {
+            e.preventDefault();
+            document.getElementById('url-input')?.focus();
+            document.getElementById('url-input')?.select();
+        } else if (mod && e.key.toLowerCase() === 'r') {
+            e.preventDefault();
+            if (typeof reloadTab === 'function') reloadTab();
+        } else if (e.key === 'F5') {
+            e.preventDefault();
+            if (typeof reloadTab === 'function') reloadTab();
+        } else if (e.altKey && e.key === 'ArrowLeft') {
+            e.preventDefault();
+            if (typeof goBack === 'function') goBack();
+        } else if (e.altKey && e.key === 'ArrowRight') {
+            e.preventDefault();
+            if (typeof goForward === 'function') goForward();
+        } else if (mod && e.key === 'Tab' && !e.shiftKey) {
+            e.preventDefault();
+            if (typeof cycleTab === 'function') cycleTab(1);
+        } else if (mod && e.shiftKey && e.key === 'Tab') {
+            e.preventDefault();
+            if (typeof cycleTab === 'function') cycleTab(-1);
+        } else if (mod && /^[1-8]$/.test(e.key)) {
+            e.preventDefault();
+            if (typeof switchTabByIndex === 'function') switchTabByIndex(parseInt(e.key, 10) - 1);
+        } else if (mod && e.key === '9') {
+            e.preventDefault();
+            if (typeof switchTabByIndex === 'function') switchTabByIndex(-1);
+        } else if (mod && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            const vw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+            if (vw && typeof openFindBar === 'function') openFindBar(vw);
+        } else if (mod && e.key.toLowerCase() === 'u') {
+            e.preventDefault();
+            const vw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+            if (vw && typeof toggleSideViewSource === 'function') toggleSideViewSource(vw);
+        } else if (mod && e.shiftKey && e.key.toLowerCase() === 'm') {
+            e.preventDefault();
+            if (typeof activeTabId !== 'undefined' && typeof toggleMute === 'function') toggleMute(activeTabId);
+        } else if (mod && e.shiftKey && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            toggleAiMode();
+        } else if (mod && e.shiftKey && e.key.toLowerCase() === 'd') {
+            e.preventDefault();
+            toggleTheme();
+        } else if (e.key === 'F12') {
+            e.preventDefault();
+            const vw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+            if (vw && vw.isDevToolsOpened && !vw.isDevToolsOpened()) vw.openDevTools();
+        } else if (e.key === 'Escape') {
+            const menu = document.getElementById('tab-dropdown-menu');
+            if (menu) menu.style.display = 'none';
+        }
+    });
 
     window.addEventListener('load', () => {
+        applySavedTheme();
         if (typeof setAiMode === 'function' && typeof isAiModeActive === 'function') {
             setAiMode(isAiModeActive());
         }
         if (typeof createNewTab === 'function' && document.querySelectorAll('.tab').length === 0) {
             createNewTab(getHomeUrl());
         }
+        if (typeof window.applySetting === 'function') {
+            const originalApplySetting = window.applySetting;
+            window.applySetting = function(id, val) {
+                originalApplySetting(id, val);
+                if (id === 'dark-mode') {
+                    const isDark = (val === true || val === 'true');
+                    applyThemeState(isDark);
+                    themeChannel.postMessage({ id: 'dark-mode', val: isDark });
+                }
+            };
+        }
     });
 </script>
 
-<script src="renderer.js"></script>
-<script src="src/browser.js"></script>
-<script src="src/paint.js"></script>
-<script src="src/keyboard.js"></script>
-<script src="src/settings.js"></script>
-<script src="src/app.js"></script>
-<script src="src/help.js"></script>
-<script src="src/split-screen.js"></script>
-<script src="src/session-manager.js"></script>
-<script src="src/limiter.js"></script>
+<script src="anka-core/browser.js"></script>
+<script src="anka-core/scripts/paint.js"></script>
+<script src="anka-core/scripts/keyboard.js"></script>
+<script src="anka-core/scripts/settings.js"></script>
+<script src="anka-core/scripts/help.js"></script>
+<script src="anka-core/scripts/split-screen.js"></script>
+<script src="anka-core/scripts/session-manager.js"></script>
+<script src="anka-core/scripts/limiter.js"></script>
+<script src="anka-core/scripts/downloads-manager.js"></script>
 </body>
 </html>

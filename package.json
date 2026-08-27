@@ -1,11 +1,11 @@
 {
   "name": "anka-web",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Anka Web",
-  "main": "src/main.js",
+  "main": "anka-core/main.js",
   "scripts": {
     "start": "electron .",
-    "obfuscate": "npx javascript-obfuscator ./src --output ./dist --compact true --self-defending true",
+    "obfuscate": "npx javascript-obfuscator --output ./dist --compact true --self-defending true ./anka-core",
     "build:win": "npm run obfuscate && npx electron-builder --win",
     "build:linux-dir": "npm run obfuscate && npx electron-builder --linux dir",
     "build:all": "npm run obfuscate && npx electron-builder --win && npx electron-builder --linux dir && node pack-deb.js"
@@ -17,38 +17,58 @@
     "electron-builder": "^24.0.0",
     "javascript-obfuscator": "^5.4.3"
   },
-"build": {
+  "build": {
     "appId": "com.wraitgame.ankaweb",
     "productName": "Anka Web",
+    "protocols": [
+      {
+        "name": "HTTP Protocol",
+        "schemes": ["http"]
+      },
+      {
+        "name": "HTTPS Protocol",
+        "schemes": ["https"]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": ["html", "htm", "shtml", "xhtml"],
+        "name": "HTML Document",
+        "role": "Viewer"
+      }
+    ],
     "win": {
       "icon": "assets/icons/logo.ico",
-      "target": [
-        "nsis"
-      ]
+      "target": ["nsis"]
     },
-"nsis": {
-  "oneClick": false,
-  "allowToChangeInstallationDirectory": true,
-  "allowElevation": true,
-  "perMachine": true,
-  "installerIcon": "assets/icons/logo.ico",
-  "uninstallerIcon": "assets/icons/logo.ico",
-  "installerHeaderIcon": "assets/icons/logo.ico",
-  "uninstallDisplayName": "Anka Web",
-  "createDesktopShortcut": "always",
-  "createStartMenuShortcut": true,
-  "shortcutName": "Anka Web",
-  "language": "1055",
-  "deleteAppDataOnUninstall": true,
-  "runAfterFinish": true,
-  "artifactName": "Anka_Web_${version}.${ext}"
-},
-
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "perMachine": true,
+      "installerIcon": "assets/icons/logo.ico",
+      "uninstallerIcon": "assets/icons/logo.ico",
+      "installerHeaderIcon": "assets/icons/logo.ico",
+      "uninstallDisplayName": "Anka Web",
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "Anka Web",
+      "language": "1055",
+      "deleteAppDataOnUninstall": true,
+      "runAfterFinish": true,
+      "include": "build/installer.nsh",
+      "artifactName": "Anka_Web_${version}.${ext}"
+    },
     "linux": {
       "icon": "assets/icons/logo.png",
-      "target": [
-        "dir"
-      ]
+      "category": "Network;WebBrowser;",
+      "mimeTypes": [
+        "text/html",
+        "application/xhtml+xml",
+        "x-scheme-handler/http",
+        "x-scheme-handler/https"
+      ],
+      "target": ["dir"]
     }
   }
 }
