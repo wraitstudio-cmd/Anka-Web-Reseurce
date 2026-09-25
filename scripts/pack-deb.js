@@ -2,13 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 
-const pkg = require('./package.json');
+const pkg = require('../package.json');
 const version = pkg.version;
-const distDir = path.join(__dirname, 'dist');
+const distDir = path.join(__dirname, '../dist');
 const srcUnpacked = path.join(distDir, 'linux-unpacked');
 const finalDebPath = path.join(distDir, `anka-web_${version}_amd64.deb`);
-
-console.log('🚀 Gelişmiş Standartlarda Debian Paketi İnşası Başladı...');
 
 function createTarball(filesList) {
     let blocks = [];
@@ -97,26 +95,26 @@ function createTarball(filesList) {
     return Buffer.concat(blocks);
 }
 
-function getAllFiles(dirPath, relativeTo, sizeObj) {
-    let results = [];
-    const list = fs.readdirSync(dirPath);
-    list.forEach(file => {
-        const filePath = path.join(dirPath, file);
-        const stat = fs.statSync(filePath);
+function getAllFiles(dirPath, relativeTo, sizeObj, results = []) {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
+        const filePath = path.join(dirPath, entry.name);
         const relPath = path.relative(relativeTo, filePath).replace(/\\/g, '/');
 
-        if (stat.isDirectory()) {
-            results = results.concat(getAllFiles(filePath, relativeTo, sizeObj));
+        if (entry.isDirectory()) {
+            getAllFiles(filePath, relativeTo, sizeObj, results);
         } else {
-            sizeObj.total += stat.size;
-            const isExe = file === 'anka-web' || file.endsWith('.so') || file.includes('chrome-sandbox');
+            const stats = fs.statSync(filePath);
+            sizeObj.total += stats.size;
+            const isExe = entry.name === 'anka-web' || entry.name.endsWith('.so') || entry.name.includes('chrome-sandbox');
             results.push({
                 name: relPath,
                 content: fs.readFileSync(filePath),
                 mode: isExe ? 0o755 : 0o644
             });
         }
-    });
+    }
     return results;
 }
 
@@ -153,7 +151,7 @@ try {
     const appFiles = getAllFiles(srcUnpacked, srcUnpacked, sizeObj);
     const installedSizeKb = Math.ceil(sizeObj.total / 1024);
 
-    let controlContent = fs.readFileSync(path.join(__dirname, 'debian-control.txt'), 'utf8').replace(/\r\n/g, '\n').trim();
+   let controlContent = fs.readFileSync(path.join(__dirname, '../debian-control.txt'), 'utf8').replace(/\r\n/g, '\n').trim();
     if (!controlContent.includes('Installed-Size:')) {
         controlContent += `\nInstalled-Size: ${installedSizeKb}`;
     } else {
@@ -177,8 +175,8 @@ exit 0
 
     console.log('📦 Uygulama katmanları inşa ediliyor...');
     let dataFiles = [];
-const iconPath = path.join(__dirname, 'assets', 'icons', 'logo.png')
-const desktopContent = fs.readFileSync(path.join(__dirname, 'anka-web.desktop'), 'utf8');
+const iconPath = path.join(__dirname, '../icons/logo.png');
+const desktopContent = fs.readFileSync(path.join(__dirname, '../anka-web.desktop'), 'utf8');
 
 dataFiles.push({
     name: 'usr/share/applications/anka-web.desktop',
@@ -194,12 +192,12 @@ dataFiles.push({
 
 if (fs.existsSync(iconPath)) {
     dataFiles.push({
-        name: 'assets/icons/logo.png',
+        name: 'usr/share/pixmaps/anka-web.png',
         content: fs.readFileSync(iconPath),
         mode: 0o644
     });
 } else {
-    console.log('⚠️ Uyarı: logo.png dosyası ana dizinde bulunamadı, ikon pakete eklenemedi.');
+    console.log('⚠️ Uyarı: icons/logo.png dosyası bulunamadı, ikon pakete eklenemedi.');
 }
 
     appFiles.forEach(f => {

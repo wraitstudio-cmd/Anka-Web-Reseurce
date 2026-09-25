@@ -61,8 +61,6 @@ function buildSearchUrl(query) {
     return engine.tpl.replace('%s', encodeURIComponent(query));
 }
 
-// Kelime sınırına göre engelleme (eski kod "bet" gibi kelimeleri her yerde eşleştirip
-// masum siteleri de engelliyordu — düzeltildi)
 function matchesBlockedWord(text) {
     const lower = text.toLowerCase();
     return BLOCKED_DOMAINS.some(b => {
@@ -105,6 +103,16 @@ function sanitizeUrl(inputUrl) {
     }
 
     return clean;
+}
+
+function getNewTabUrl() {
+    try {
+        const path = require('path');
+        const { pathToFileURL } = require('url');
+        return pathToFileURL(path.join(__dirname, '../renderer/newtab.html')).href;
+    } catch (err) {
+        return new URL('newtab.html', window.location.href).href;
+    }
 }
 
 function applyMandatorySecurity(vw) {
@@ -246,170 +254,175 @@ function injectForcedRestrictions(vw) {
 function getFaviconUrl(url) {
     try {
         if (url.includes('newtab.html') || url.startsWith('file:///')) {
-            return 'assets/icons/logo.png';
+            return '../../icons/logo.png';
         }
         return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`;
     } catch (e) {
-        return 'assets/icons/logo.png';
+        return '../../icons/logo.png';
     }
 }
 
-// COMPLETE UI INJECTIONS FOR CONTEXT MENU & DEVTOOLS SIDE PANEL
 (function injectContextMenuAndDevToolsStyles() {
     if (document.getElementById('ctx-menu-styles')) return;
     const style = document.createElement('style');
     style.id = 'ctx-menu-styles';
-    style.textContent = `
-        #custom-context-menu {
-            position: fixed;
-            background: rgba(22, 22, 26, 0.94);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 6px;
-            min-width: 230px;
-            z-index: 2000000;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            opacity: 0;
-            transform: scale(0.92) translateY(-4px);
-            transform-origin: top left;
-            transition: opacity 0.12s cubic-bezier(0, 0, 0.2, 1), transform 0.12s cubic-bezier(0, 0, 0.2, 1);
-            pointer-events: none;
-            will-change: transform, opacity;
-        }
-        #custom-context-menu.show {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            pointer-events: auto;
-        }
-        #custom-context-menu.hiding {
-            opacity: 0;
-            transform: scale(0.96) translateY(-2px);
-            transition: opacity 0.08s ease, transform 0.08s ease;
-            pointer-events: none;
-        }
-        .ctx-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            font-size: 12.5px;
-            font-weight: 500;
-            color: #ececee;
-            border-radius: 7px;
-            cursor: pointer;
-            white-space: nowrap;
-            user-select: none;
-            transition: background 0.08s ease, color 0.08s ease;
-        }
-        .ctx-item:hover {
-            background: rgba(255, 255, 255, 0.09);
-            color: #ffffff;
-        }
-        .ctx-item:active {
-            background: rgba(255, 255, 255, 0.14);
-        }
-        .ctx-item.disabled {
-            color: #55555e;
-            cursor: default;
-        }
-        .ctx-item.disabled:hover {
-            background: transparent;
-        }
-        .ctx-shortcut {
-            font-size: 11px;
-            color: #71717a;
-            margin-left: 16px;
-        }
-        .ctx-sep {
-            height: 1px;
-            background: rgba(255, 255, 255, 0.07);
-            margin: 4px 6px;
-        }
+style.textContent = `
+    #custom-context-menu {
+        position: fixed;
+        background: rgba(22, 22, 26, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 6px;
+        min-width: 230px;
+        z-index: 2000000;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        opacity: 0;
+        transform: scale(0.92) translateY(-4px) translateZ(0);
+        transform-origin: top left;
+        transition: opacity 0.12s cubic-bezier(0, 0, 0.2, 1), transform 0.12s cubic-bezier(0, 0, 0.2, 1);
+        pointer-events: none;
+        will-change: transform, opacity, backdrop-filter;
+    }
+    #custom-context-menu.show {
+        opacity: 1;
+        transform: scale(1) translateY(0) translateZ(0);
+        pointer-events: auto;
+    }
+    #custom-context-menu.hiding {
+        opacity: 0;
+        transform: scale(0.96) translateY(-2px) translateZ(0);
+        transition: opacity 0.08s ease, transform 0.08s ease;
+        pointer-events: none;
+    }
+    .ctx-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: #ececee;
+        border-radius: 7px;
+        cursor: pointer;
+        white-space: nowrap;
+        user-select: none;
+        transition: background 0.08s ease, color 0.08s ease;
+    }
+    .ctx-item:hover {
+        background: rgba(255, 255, 255, 0.09);
+        color: #ffffff;
+    }
+    .ctx-item:active {
+        background: rgba(255, 255, 255, 0.14);
+    }
+    .ctx-item.disabled {
+        color: #55555e;
+        cursor: default;
+    }
+    .ctx-item.disabled:hover {
+        background: transparent;
+    }
+    .ctx-shortcut {
+        font-size: 11px;
+        color: #71717a;
+        margin-left: 16px;
+    }
+    .ctx-sep {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.07);
+        margin: 4px 6px;
+    }
 
-        #anka-side-devtools {
-            position: fixed;
-            top: 0;
-            right: -50%;
-            width: 45%;
-            height: 100%;
-            background: #141417;
-            border-left: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000000;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            transition: right 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
-            font-family: Consolas, 'Courier New', monospace;
-        }
-        #anka-side-devtools.open {
-            right: 0;
-        }
-        .side-dt-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #1c1c21;
-            padding: 10px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            color: #e4e4e7;
-            font-family: system-ui, sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .side-dt-close {
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            background: rgba(255,255,255,0.05);
-            color: #a1a1aa;
-        }
-        .side-dt-close:hover { background: rgba(255,71,87,0.2); color: #ff4757; }
-        .side-dt-content {
-            flex: 1;
-            overflow: auto;
-            padding: 16px;
-            color: #a6accd;
-            font-size: 12px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .anka-find-bar {
-            position: fixed;
-            top: 8px;
-            right: 8px;
-            background: rgba(22,22,26,0.96);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 6px 8px;
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            z-index: 2000001;
-            font-family: system-ui, sans-serif;
-        }
-        .anka-find-bar input {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 6px;
-            color: #ececee;
-            padding: 4px 8px;
-            font-size: 12.5px;
-            outline: none;
-        }
-        .anka-find-bar button {
-            background: rgba(255,255,255,0.08);
-            border: none;
-            color: #ececee;
-            border-radius: 6px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .anka-find-bar button:hover { background: rgba(255,255,255,0.16); }
-    `;
+    #anka-side-devtools {
+        position: fixed;
+        top: 0;
+        right: -50%;
+        width: 45%;
+        height: 100%;
+        background: rgba(20, 20, 23, 0.85);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 1000000;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column;
+        transition: right 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+        font-family: Consolas, 'Courier New', monospace;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+    #anka-side-devtools.open {
+        right: 0;
+    }
+    .side-dt-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(28, 28, 33, 0.9);
+        padding: 10px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        color: #e4e4e7;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .side-dt-close {
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: rgba(255,255,255,0.05);
+        color: #a1a1aa;
+    }
+    .side-dt-close:hover { background: rgba(255,71,87,0.2); color: #ff4757; }
+    .side-dt-content {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+        color: #a6accd;
+        font-size: 12px;
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+    .anka-find-bar {
+        position: fixed;
+        top: 8px;
+        right: 8px;
+        background: rgba(22, 22, 26, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 6px 8px;
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        z-index: 2000001;
+        font-family: system-ui, sans-serif;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+    .anka-find-bar input {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 6px;
+        color: #ececee;
+        padding: 4px 8px;
+        font-size: 12.5px;
+        outline: none;
+    }
+    .anka-find-bar button {
+        background: rgba(255,255,255,0.08);
+        border: none;
+        color: #ececee;
+        border-radius: 6px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+    .anka-find-bar button:hover { background: rgba(255,255,255,0.16); }
+`;
     document.head.appendChild(style);
 })();
 
@@ -482,13 +495,6 @@ function showContextMenu(x, y, items) {
         menu.classList.add('show');
     });
 }
-
-window.addEventListener('pointerdown', (e) => {
-    const menu = document.getElementById('custom-context-menu');
-    if (menu && !e.target.closest('#custom-context-menu')) {
-        closeContextMenu();
-    }
-}, true);
 
 window.addEventListener('wheel', closeContextMenu, { passive: true });
 window.addEventListener('contextmenu', (e) => {
@@ -690,11 +696,7 @@ function pinToSidePanel(vw) {
     showNotification("Sekme yan panele sabitlendi.");
 }
 
-function openFindBar(vw) {
-    if (!vw || typeof vw.findInPage !== 'function') {
-        showNotification("Bu sekmede arama desteklenmiyor.");
-        return;
-    }
+function openFindBar() {
     let bar = document.getElementById('anka-find-bar');
     if (bar) bar.remove();
 
@@ -702,7 +704,7 @@ function openFindBar(vw) {
     bar.id = 'anka-find-bar';
     bar.className = 'anka-find-bar';
     bar.innerHTML = `
-        <input type="text" id="anka-find-input" placeholder="Sayfada ara..." />
+        <input type="text" id="anka-find-input" placeholder="Sayfada ara..." autocomplete="off" />
         <button id="anka-find-prev">◀</button>
         <button id="anka-find-next">▶</button>
         <button id="anka-find-close">✕</button>
@@ -712,21 +714,28 @@ function openFindBar(vw) {
     const input = bar.querySelector('#anka-find-input');
     input.focus();
 
-    const runFind = (forward) => {
+    const runFind = async (forward) => {
         const term = input.value;
-        if (!term) { if (vw.stopFindInPage) vw.stopFindInPage('clearSelection'); return; }
-        vw.findInPage(term, { forward });
+        if (!term) {
+            await window.electronAPI.stopFindInPage('clearSelection');
+            return;
+        }
+        await window.electronAPI.findInPage(term, { forward });
     };
 
     input.addEventListener('input', () => runFind(true));
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') runFind(!e.shiftKey);
-        if (e.key === 'Escape') bar.remove();
+    input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Enter') await runFind(!e.shiftKey);
+        if (e.key === 'Escape') {
+            await window.electronAPI.stopFindInPage('clearSelection');
+            bar.remove();
+        }
     });
+
     bar.querySelector('#anka-find-next').onclick = () => runFind(true);
     bar.querySelector('#anka-find-prev').onclick = () => runFind(false);
-    bar.querySelector('#anka-find-close').onclick = () => {
-        if (vw.stopFindInPage) vw.stopFindInPage('clearSelection');
+    bar.querySelector('#anka-find-close').onclick = async () => {
+        await window.electronAPI.stopFindInPage('clearSelection');
         bar.remove();
     };
 }
@@ -737,14 +746,15 @@ function createNewTab(url = 'newtab.html') {
         return null;
     }
 
-    const isDefaultNewTab = (!url || url === 'newtab.html' || url === 'about:blank' || url.startsWith('file:///'));
-    const secureUrl = isDefaultNewTab ? 'newtab.html' : sanitizeUrl(url);
+    const isNewTab = !url || url === 'newtab.html';
+    const isDefaultNewTab = isNewTab || url === 'about:blank' || url.startsWith('file:///');
+    const secureUrl = isNewTab ? getNewTabUrl() : sanitizeUrl(url);
     const id = 'tab-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
     const tab = document.createElement('div');
     tab.className = 'tab';
     tab.id = 'btn-' + id;
     tab.innerHTML = `
-        <img src="${!isDefaultNewTab && secureUrl.startsWith('http') ? getFaviconUrl(secureUrl) : 'assets/icons/logo.png'}" class="tab-icon" alt="">
+        <img src="${!isDefaultNewTab && secureUrl.startsWith('http') ? getFaviconUrl(secureUrl) : '../../icons/logo.png'}" class="tab-icon" alt="">
         <span class="tab-title">${isDefaultNewTab ? 'Yeni Sekme' : 'Yükleniyor...'}</span>
         <div class="tab-controls" style="display: flex; align-items: center; gap: 4px; margin-left: auto;">
             <div class="mute-tab" onclick="toggleMute('${id}', event)" title="Sesi Aç/Kapat" style="cursor: pointer; font-size: 13px; padding: 2px 6px; background: rgba(255,255,255,0.05); border-radius: 4px;">Sessiz</div>
@@ -753,16 +763,22 @@ function createNewTab(url = 'newtab.html') {
             </div>
         </div>
     `;
+    const tabIcon = tab.querySelector('.tab-icon');
+    if (tabIcon) tabIcon.onerror = () => { tabIcon.src = '../../icons/logo.png'; };
     tab.onclick = () => switchTab(id);
     document.getElementById('tab-bar').appendChild(tab);
 
-    const vw = document.createElement('webview');
-    vw.id = id;
-    vw.setAttribute('allowpopups', '');
-    vw.src = secureUrl;
-    vw.className = 'browser-view';
-    vw.style.cssText = "display:none; width:100%; height:100%; flex:1;";
-    document.getElementById('wv-container').appendChild(vw);
+const vw = document.createElement('webview');
+vw.id = id;
+vw.className = 'browser-view';
+vw.setAttribute('allowpopups', ''); 
+
+vw.setAttribute('webpreferences', 'contextIsolation=false, nodeIntegration=true, webSecurity=false');
+vw.setAttribute('nodeintegration', 'true');
+
+vw.style.cssText = "display:none; width:100%; height:100%; flex:1;";
+document.getElementById('wv-container').appendChild(vw);
+vw.setAttribute('src', secureUrl);
 
     applyMandatorySecurity(vw);
     attachWebviewContextMenu(vw);
@@ -770,7 +786,10 @@ function createNewTab(url = 'newtab.html') {
     vw.addEventListener('page-favicon-updated', (e) => {
         if (e.favicons && e.favicons.length > 0) {
             const iconEl = tab.querySelector('.tab-icon');
-            if (iconEl) iconEl.src = e.favicons[0];
+            if (iconEl) {
+                iconEl.onerror = () => { iconEl.src = '../../icons/logo.png'; };
+                iconEl.src = e.favicons[0];
+            }
         }
     });
 
@@ -852,10 +871,10 @@ function openAISession() {
 
     const vw = document.createElement('webview');
     vw.id = id;
-    vw.src = prov.home;
     vw.className = 'browser-view';
     vw.style.cssText = "display:none; width:100%; height:100%; flex:1;";
     document.getElementById('wv-container').appendChild(vw);
+    vw.src = prov.home;
 
     applyMandatorySecurity(vw);
     attachWebviewContextMenu(vw);
@@ -866,7 +885,7 @@ function switchTab(id) {
     activeTabId = id;
     document.querySelectorAll('webview').forEach(el => {
         const isActive = el.id === id;
-        el.style.display = isActive ? 'flex' : 'none';
+        el.style.display = isActive ? 'block' : 'none';
         el.classList.toggle('active', isActive);
     });
     document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.id === 'btn-' + id));
@@ -972,97 +991,269 @@ function focusUrlBar() {
     }
 }
 
-// ---- Klavye Kısayolları ----
 document.addEventListener('keydown', (e) => {
     const ctrl = e.ctrlKey || e.metaKey;
 
     if (ctrl && e.key.toLowerCase() === 't' && !e.shiftKey) {
-        e.preventDefault(); createNewTab(typeof getHomeUrl === 'function' ? getHomeUrl() : 'newtab.html');
+        e.preventDefault(); 
+        if (typeof createNewTab === 'function') createNewTab(typeof getHomeUrl === 'function' ? getHomeUrl() : 'newtab.html');
     } else if (ctrl && e.shiftKey && e.key.toLowerCase() === 't') {
-        e.preventDefault(); reopenClosedTab();
+        e.preventDefault(); 
+        if (typeof reopenClosedTab === 'function') reopenClosedTab();
     } else if (ctrl && e.shiftKey && e.key.toLowerCase() === 'n') {
-        e.preventDefault(); createIncognitoTab();
+        e.preventDefault(); 
+        if (typeof createIncognitoTab === 'function') createIncognitoTab();
     } else if (ctrl && e.key.toLowerCase() === 'w') {
-        e.preventDefault(); if (activeTabId) closeTab(activeTabId, { stopPropagation() {} });
+        e.preventDefault(); 
+        if (typeof activeTabId !== 'undefined' && activeTabId && typeof closeTab === 'function') closeTab(activeTabId, { stopPropagation() {} });
     } else if (ctrl && e.key.toLowerCase() === 'l') {
-        e.preventDefault(); focusUrlBar();
+        e.preventDefault(); 
+        if (typeof focusUrlBar === 'function') focusUrlBar();
     } else if (ctrl && e.key.toLowerCase() === 'r') {
-        e.preventDefault(); reloadPage();
+        e.preventDefault(); 
+        if (typeof reloadPage === 'function') reloadPage();
     } else if (e.key === 'F5') {
-        e.preventDefault(); reloadPage();
+        e.preventDefault(); 
+        if (typeof reloadPage === 'function') reloadPage();
     } else if (e.altKey && e.key === 'ArrowLeft') {
-        e.preventDefault(); goBack();
+        e.preventDefault(); 
+        if (typeof goBack === 'function') goBack();
     } else if (e.altKey && e.key === 'ArrowRight') {
-        e.preventDefault(); goForward();
+        e.preventDefault(); 
+        if (typeof goForward === 'function') goForward();
     } else if (ctrl && e.key === 'Tab' && !e.shiftKey) {
-        e.preventDefault(); cycleTab(1);
+        e.preventDefault(); 
+        if (typeof cycleTab === 'function') cycleTab(1);
     } else if (ctrl && e.shiftKey && e.key === 'Tab') {
-        e.preventDefault(); cycleTab(-1);
+        e.preventDefault(); 
+        if (typeof cycleTab === 'function') cycleTab(-1);
     } else if (ctrl && /^[1-8]$/.test(e.key)) {
-        e.preventDefault(); switchTabByIndex(parseInt(e.key, 10) - 1);
+        e.preventDefault(); 
+        if (typeof switchTabByIndex === 'function') switchTabByIndex(parseInt(e.key, 10) - 1);
     } else if (ctrl && e.key === '9') {
-        e.preventDefault(); switchTabByIndex(-1);
+        e.preventDefault(); 
+        if (typeof switchTabByIndex === 'function') switchTabByIndex(-1);
     } else if (ctrl && e.key.toLowerCase() === 'f') {
         e.preventDefault();
-        const vw = document.getElementById(activeTabId);
-        if (vw) openFindBar(vw);
+        const vw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+        if (vw && typeof openFindBar === 'function') openFindBar(vw);
     } else if (ctrl && e.key.toLowerCase() === 'u') {
         e.preventDefault();
-        const vw = document.getElementById(activeTabId);
-        if (vw) toggleSideViewSource(vw);
+        const vw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+        if (vw && typeof toggleSideViewSource === 'function') toggleSideViewSource(vw);
     } else if (ctrl && e.shiftKey && e.key.toLowerCase() === 'm') {
-        e.preventDefault(); if (activeTabId) toggleMute(activeTabId);
+        e.preventDefault(); 
+        if (typeof activeTabId !== 'undefined' && activeTabId && typeof toggleMute === 'function') toggleMute(activeTabId);
     } else if (e.key === 'F12') {
         e.preventDefault();
-        const vw = document.getElementById(activeTabId);
-        if (vw && vw.isDevToolsOpened && !vw.isDevToolsOpened()) vw.openDevTools();
+        const vw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+        if (vw && typeof vw.isDevToolsOpened === 'function' && !vw.isDevToolsOpened() && typeof vw.openDevTools === 'function') {
+            vw.openDevTools();
+        }
     }
 }, true);
 
 document.addEventListener('DOMContentLoaded', () => {
-    setAiMode(isAiModeActive());
+    if (typeof setAiMode === 'function' && typeof isAiModeActive === 'function') {
+        setAiMode(isAiModeActive());
+    }
 
-    document.getElementById('tab-bar')?.addEventListener('contextmenu', (e) => {
+    const tabBar = document.getElementById('tab-bar');
+    tabBar?.addEventListener('contextmenu', (e) => {
         const tabEl = e.target.closest('.tab');
         if (!tabEl) return;
         e.preventDefault();
         const id = tabEl.id.replace('btn-', '');
         const vw = document.getElementById(id);
+        const isPinned = tabEl.classList.contains('pinned');
+        const isMuted = vw && typeof vw.isAudioMuted === 'function' && vw.isAudioMuted();
 
         const items = [
-            { label: 'Sekmeyi Yenile', shortcut: 'Ctrl+R', action: () => vw && vw.reload() },
-            { label: 'Sekmeyi Çoğalt', action: () => vw && createNewTab(vw.getURL()) },
-            { label: (vw && vw.isAudioMuted && vw.isAudioMuted()) ? 'Sesi Aç' : 'Sesi Kapat', action: () => toggleMute(id) },
+            { 
+                label: 'Sekmeyi Yenile', 
+                shortcut: 'Ctrl+R', 
+                icon: '🔄', 
+                action: () => {
+                    if (vw && typeof vw.reload === 'function') vw.reload();
+                } 
+            },
+            { 
+                label: 'Sekmeyi Çoğalt', 
+                shortcut: 'Ctrl+D', 
+                icon: '📋', 
+                action: () => {
+                    if (vw && typeof createNewTab === 'function') createNewTab(typeof vw.getURL === 'function' ? vw.getURL() : '');
+                } 
+            },
+            { 
+                label: isMuted ? 'Sesi Aç' : 'Sesi Kapat', 
+                shortcut: 'Ctrl+Shift+M', 
+                icon: isMuted ? '🔊' : '🔇', 
+                action: () => {
+                    if (typeof toggleMute === 'function') toggleMute(id);
+                } 
+            },
             '---',
-            { label: 'Sekmeyi Sabitle', action: () => togglePinTab(id) },
-            { label: 'Sekmeyi Kapat', shortcut: 'Ctrl+W', action: () => closeTab(id, { stopPropagation() {} }) },
-            { label: 'Kapatılan Sekmeyi Aç', shortcut: 'Ctrl+Shift+T', action: () => reopenClosedTab() },
-            { label: 'Diğer Sekmeleri Kapat', action: () => closeOtherTabs(id) },
-            { label: 'Sağdaki Sekmeleri Kapat', action: () => closeTabsToRight(id) }
+            { 
+                label: isPinned ? 'Sabitlemeyi Kaldır' : 'Sekmeyi Sabitle', 
+                icon: '📌', 
+                action: () => {
+                    if (typeof togglePinTab === 'function') {
+                        togglePinTab(id);
+                    } else {
+                        tabEl.classList.toggle('pinned');
+                        if (typeof saveTabState === 'function') saveTabState();
+                    }
+                } 
+            },
+            { 
+                label: isPinned ? 'Yan Panelden Çıkar' : 'Yan Panele Sabitle', 
+                icon: '📑', 
+                action: () => {
+                    if (typeof toggleSidebarPin === 'function') {
+                        toggleSidebarPin(id);
+                    } else if (typeof togglePinTab === 'function') {
+                        togglePinTab(id);
+                    } else {
+                        tabEl.classList.toggle('sidebar-pinned');
+                        if (typeof saveTabState === 'function') saveTabState();
+                    }
+                } 
+            },
+            { 
+                label: 'Yeni Sekme Grubu Oluştur', 
+                icon: '🏷️', 
+                action: () => {
+                    if (typeof createTabGroup === 'function') createTabGroup(id);
+                } 
+            },
+            '---',
+            { 
+                label: 'Sekmeyi Kapat', 
+                shortcut: 'Ctrl+W', 
+                icon: '✕', 
+                action: () => {
+                    if (typeof closeTab === 'function') closeTab(id, { stopPropagation() {} });
+                } 
+            },
+            { 
+                label: 'Kapananı Geri Aç', 
+                shortcut: 'Ctrl+Shift+T', 
+                icon: '↩️', 
+                action: () => {
+                    if (typeof reopenClosedTab === 'function') reopenClosedTab();
+                } 
+            },
+            { 
+                label: 'Diğer Sekmeleri Kapat', 
+                icon: '🗑️', 
+                action: () => {
+                    if (typeof closeOtherTabs === 'function') closeOtherTabs(id);
+                } 
+            },
+            { 
+                label: 'Sağdaki Sekmeleri Kapat', 
+                icon: '➡️', 
+                action: () => {
+                    if (typeof closeTabsToRight === 'function') closeTabsToRight(id);
+                } 
+            },
+            '---',
+            { 
+                label: 'Geliştirici Araçları', 
+                shortcut: 'F12', 
+                icon: '🛠️', 
+                action: () => {
+                    if (vw && typeof vw.openDevTools === 'function') vw.openDevTools();
+                } 
+            }
         ];
-        showContextMenu(e.clientX, e.clientY, items);
+        if (typeof showContextMenu === 'function') {
+            showContextMenu(e.clientX, e.clientY, items);
+        }
     });
 
-    document.getElementById('url-input')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const val = e.target.value.trim();
-            const activeVw = document.getElementById(activeTabId);
-            if (activeVw) {
-                const finalUrl = sanitizeUrl(val);
-                activeVw.loadURL(finalUrl);
+    tabBar?.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            tabBar.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+function sanitizeUrl(inputUrl) {
+    let clean = inputUrl.trim();
+    if (!clean) return 'newtab.html';
+
+    if (clean.includes('newtab.html') || clean.includes('browser.html') || clean.startsWith('file:///')) {
+        return clean;
+    }
+
+    if (clean === 'about:blank') {
+        return clean;
+    }
+
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        const isUrlPattern = /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(clean);
+        if (isUrlPattern) {
+            clean = 'https://' + clean;
+        } else {
+            clean = buildSearchUrl(clean);
+        }
+    }
+
+    try {
+        const parsed = new URL(clean);
+        const domain = parsed.hostname.toLowerCase();
+
+        if (matchesBlockedWord(domain) || matchesBlockedWord(parsed.pathname)) {
+            showNotification("Bu site güvenlik politikaları gereği engellendi.");
+            return 'about:blank';
+        }
+
+        if (domain.includes('://google.com')) {
+            clean = 'https://://google.com/signup';
+        }
+    } catch (err) {
+        return 'newtab.html';
+    }
+
+    return clean;
+}
+
+    document.getElementById('url-input')?.addEventListener('focus', (e) => {
+        e.target.select();
+    });
+
+    document.addEventListener('dragover', (e) => e.preventDefault());
+    document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+            const activeVw = document.getElementById(typeof activeTabId !== 'undefined' ? activeTabId : '');
+            if (activeVw && typeof activeVw.loadURL === 'function') {
+                activeVw.loadURL(`file://${files[0].path}`);
             }
-            e.target.blur();
         }
     });
 
     if (document.querySelectorAll('.tab').length === 0) {
-        createNewTab(typeof getHomeUrl === 'function' ? getHomeUrl() : 'newtab.html');
+        if (typeof createNewTab === 'function') {
+            createNewTab(typeof getHomeUrl === 'function' ? getHomeUrl() : 'newtab.html');
+        }
     }
 });
 
-window.addEventListener('mousedown', (e) => {
+window.addEventListener('pointerdown', (e) => {
     const menu = document.getElementById('custom-context-menu');
-    if (menu && !e.target.closest('#custom-context-menu')) {
-        closeContextMenu();
+    if (!menu) return;
+
+    const isVisible = menu.style.display !== 'none' && window.getComputedStyle(menu).display !== 'none';
+    if (!isVisible) return;
+
+    if (!menu.contains(e.target)) {
+        if (typeof closeContextMenu === 'function') {
+            closeContextMenu();
+        } else {
+            menu.style.display = 'none';
+        }
     }
 }, true);

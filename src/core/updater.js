@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 const https = require('https');
-const packageJson = require('../package.json');
+const packageJson = require('../../package.json');
 
 const CURRENT_VERSION = packageJson.version;
 const UPDATE_URL = "https://raw.githubusercontent.com/wraitstudio-cmd/Anka-Web/main/latest.yml";

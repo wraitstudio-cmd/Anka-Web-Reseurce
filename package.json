@@ -1,17 +1,16 @@
 {
   "name": "anka-web",
-  "version": "1.4.6",
+  "version": "1.4.8",
   "description": "Anka Web",
-  "main": "anka-core/main.js",
+  "main": "src/core/main.js",
   "scripts": {
     "start": "electron .",
-    "obfuscate": "npx javascript-obfuscator --output ./dist --compact true --self-defending true ./anka-core",
-    "build:win": "npm run obfuscate && npx electron-builder --win",
-    "build:linux-dir": "npm run obfuscate && npx electron-builder --linux dir",
-    "build:all": "npm run obfuscate && npx electron-builder --win && npx electron-builder --linux dir && node pack-deb.js"
+    "build:win": "npx electron-builder --win",
+    "build:linux-dir": "npx electron-builder --linux dir",
+    "build:all": "npx electron-builder --win && npx electron-builder --linux dir && node scripts/pack-deb.js"
   },
-  "author": "WraitGame <wraitgame@gmail.com>",
-  "license": "MIT",
+  "author": "WraitGame <wraitstudio@gmail.com>",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "electron": "^30.0.0",
     "electron-builder": "^24.0.0",
@@ -20,6 +19,11 @@
   "build": {
     "appId": "com.wraitgame.ankaweb",
     "productName": "Anka Web",
+    "files": [
+      "src/**/*",
+      "icons/**/*",
+      "package.json"
+    ],
     "protocols": [
       {
         "name": "HTTP Protocol",
@@ -38,7 +42,7 @@
       }
     ],
     "win": {
-      "icon": "assets/icons/logo.ico",
+      "icon": "icons/logo.ico",
       "target": ["nsis"]
     },
     "nsis": {
@@ -46,9 +50,9 @@
       "allowToChangeInstallationDirectory": true,
       "allowElevation": true,
       "perMachine": true,
-      "installerIcon": "assets/icons/logo.ico",
-      "uninstallerIcon": "assets/icons/logo.ico",
-      "installerHeaderIcon": "assets/icons/logo.ico",
+      "installerIcon": "icons/logo.ico",
+      "uninstallerIcon": "icons/logo.ico",
+      "installerHeaderIcon": "icons/logo.ico",
       "uninstallDisplayName": "Anka Web",
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
@@ -60,7 +64,7 @@
       "artifactName": "Anka_Web_${version}.${ext}"
     },
     "linux": {
-      "icon": "assets/icons/logo.png",
+      "icon": "icons/logo.png",
       "category": "Network;WebBrowser;",
       "mimeTypes": [
         "text/html",

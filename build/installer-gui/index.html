@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta charset="UTF-8">
+<title>Anka Web Kurulum Yardımcısı</title>
+<hta:application 
+    id="installerApp" 
+    applicationName="AnkaWebInstaller" 
+    border="none" 
+    innerBorder="no" 
+    caption="no" 
+    scroll="no" 
+    maximizeButton="no" 
+    minimizeButton="no" 
+    sysMenu="no" 
+    singleInstance="yes"
+    windowState="normal"
+/>
+<style>
+:root {
+    --bg-color: #090a0f;
+    --card-bg: rgba(255, 255, 255, 0.02);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.35);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    background: var(--bg-color);
+    color: var(--text-main);
+}
+
+.window-container {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 20% 15%, rgba(99, 102, 241, 0.12), transparent 40%), 
+                radial-gradient(circle at 85% 85%, rgba(59, 130, 246, 0.08), transparent 45%), 
+                var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    -webkit-app-region: drag;
+}
+
+.ambient-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    top: -150px;
+    left: -150px;
+    border-radius: 50%;
+    background: var(--primary-glow);
+    filter: blur(90px);
+    pointer-events: none;
+    transform: translate3d(0, 0, 0);
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    text-align: center;
+    transform: translate3d(0, 0, 0);
+}
+
+.logo-wrap {
+    position: relative;
+    width: 84px;
+    height: 84px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--border-color);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.logo {
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 14px;
+}
+
+.title {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+    animation: fadeUp 0.5s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text-muted);
+    animation: fadeUp 0.5s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.update-badge {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 600;
+    animation: fadeUp 0.4s ease both;
+}
+
+.update-badge.visible {
+    display: inline-flex;
+}
+
+.update-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #60a5fa;
+    box-shadow: 0 0 10px #60a5fa;
+}
+
+.status-container {
+    margin-top: 32px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    animation: fadeUp 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-main);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    box-shadow: 0 0 12px var(--primary);
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.progress-track {
+    position: relative;
+    width: 100%;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.progress-bar {
+    position: absolute;
+    left: -40%;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent, #818cf8, #3b82f6, transparent);
+    animation: progressMove 1.4s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes progressMove {
+    0% { left: -40%; }
+    100% { left: 100%; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+</style>
+</head>
+<body>
+<div class="window-container">
+    <div class="ambient-glow"></div>
+    <main class="content">
+        <div class="logo-wrap">
+            <img id="appLogo" class="logo" src="logo.png" alt="" onerror="this.style.display='none'">
+        </div>
+        <h1 id="title" class="title">Kuruluma Hazırlanıyor</h1>
+        <p id="subtitle" class="subtitle">Gerekli sistem dosyaları güvenle yapılandırılıyor.</p>
+        <div id="updateBadge" class="update-badge">
+            <span class="update-dot"></span>
+            Mevcut Sürüm Güncelleniyor
+        </div>
+        <div class="status-container">
+            <div class="status-info">
+                <span class="status-dot"></span>
+                <span id="statusText">Bağlantı kontrol ediliyor...</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </main>
+    <footer class="footer">
+        WraitGame Tarafından Yapıldı &bull; v1.4.8
+    </footer>
+</div>
+<script>
+(function () {
+    "use strict";
+    try {
+        if (window.resizeTo) {
+            window.resizeTo(720, 440);
+            window.moveTo((window.screen.width - 720) / 2, (window.screen.height - 440) / 2);
+        }
+    } catch(e) {}
+
+    var isUpdate = false;
+    try {
+        var searchStr = window.location.search || "";
+        var extStr = (window.external && typeof window.external === "object") ? String(window.external) : "";
+        var cmd = (searchStr + " " + extStr).toLowerCase();
+        if (cmd.indexOf("update") !== -1 || cmd.indexOf("1") !== -1) {
+            isUpdate = true;
+        }
+    } catch (e) {}
+
+    var titleEl = document.getElementById("title");
+    var subtitleEl = document.getElementById("subtitle");
+    var statusEl = document.getElementById("statusText");
+    var badgeEl = document.getElementById("updateBadge");
+
+    if (isUpdate) {
+        titleEl.innerText = "Anka Web Güncelleniyor";
+        subtitleEl.innerText = "Sistem bileşenleri en son sürüme yükseltiliyor.";
+        badgeEl.className = "update-badge visible";
+    } else {
+        titleEl.innerText = "Anka Web Kuruluyor";
+        subtitleEl.innerText = "Uygulama paketleri cihaza entegre ediliyor.";
+    }
+
+    var speedFactor = 1.0;
+    try {
+        if (navigator.connection) {
+            var conn = navigator.connection;
+            if (conn.downlink) {
+                if (conn.downlink < 2) {
+                    speedFactor = 1.8;
+                } else if (conn.downlink > 10) {
+                    speedFactor = 0.8;
+                }
+            }
+            if (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g') {
+                speedFactor = 2.2;
+            }
+        }
+    } catch(e) {}
+
+    var baseTimes = [1000, 2400, 4000, 5800, 7200];
+    var steps = [
+        { text: "Ağ bağlantısı optimize ediliyor...", time: baseTimes[0] * speedFactor },
+        { text: "Gerekli dizin izinleri doğrulanıyor...", time: baseTimes[1] * speedFactor },
+        { text: "Çekirdek modüller sisteme kopyalanıyor...", time: baseTimes[2] * speedFactor },
+        { text: "Kısayollar ve kayıtlar yapılandırılıyor...", time: baseTimes[3] * speedFactor },
+        { text: "Kurulum başarıyla tamamlandı!", time: baseTimes[4] * speedFactor }
+    ];
+
+    var i = 0;
+    function runSetup() {
+        if (i < steps.length) {
+            statusEl.innerText = steps[i].text;
+            var delay = steps[i].time - (i === 0 ? 0 : steps[i-1].time);
+            setTimeout(runSetup, delay);
+            i++;
+        } else {
+            setTimeout(function() {
+                try {
+                    window.close();
+                } catch(err) {
+                    try { self.close(); } catch(e2) {}
+                }
+            }, 800);
+        }
+    }
+
+    setTimeout(runSetup, 500);
+})();
+</script>
+</body>
+</html>

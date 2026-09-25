@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>Anka Web</title>
+<script>
+    (function () {
+        try {
+            if (localStorage.getItem('set_dark-mode') === 'false') document.documentElement.classList.add('light-theme');
+      const uiScale = localStorage.getItem('set_ui-scale') || 'normal';
+      const fontScale = localStorage.getItem('set_font-scale') || 'normal';
+      const themePreset = localStorage.getItem('set_theme-preset') || 'dark';
+      const touchMode = localStorage.getItem('set_touch-mode') === 'true';
+      document.documentElement.dataset.uiScale = uiScale;
+      document.documentElement.dataset.fontScale = fontScale;
+      if (themePreset !== 'dark' && themePreset !== 'light') document.documentElement.classList.add('theme-' + themePreset);
+      if (themePreset === 'light') document.documentElement.classList.add('light-theme');
+      if (touchMode) document.documentElement.classList.add('touch-mode');
+        } catch (err) {}
+    })();
+</script>
+<style>
+    :root {
+        color-scheme: dark;
+        --bg-primary: #09090b;
+        --bg-secondary: #121215;
+        --bg-tertiary: #18181b;
+        --bg-elevated: #27272a;
+        --text-color: #f4f4f5;
+        --text-secondary: #a1a1aa;
+        --accent: #ff4757;
+        --accent-2: #ff7a45;
+        --border-color: #27272a;
+        --border-hover: #3f3f46;
+        --ok: #10b981;
+        --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Ubuntu, Cantarell, 'Noto Sans', 'Helvetica Neue', Arial, sans-serif;
+    }
+    :root.light-theme,
+    body.light-theme {
+        color-scheme: light;
+        --bg-primary: #f0f2f5;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #eef0f3;
+        --bg-elevated: #e4e6eb;
+        --text-color: #050505;
+        --text-secondary: #65676b;
+        --border-color: #d8dade;
+        --border-hover: #b9bcc2;
+    }
+      :root.theme-catppuccin { --accent: #f38ba8; --bg-primary: #1e1e2e; --bg-secondary: #181825; --bg-tertiary: #313244; --bg-elevated: #45475a; --text-color: #cdd6f4; --text-secondary: #a6adc8; --border-color: #45475a; --border-hover: #585b70; }
+      :root.theme-cyberpunk { --accent: #ff007f; --bg-primary: #05050a; --bg-secondary: #0f0e17; --bg-tertiary: #1f1b2c; --bg-elevated: #342d4a; --text-color: #fffffe; --text-secondary: #a7a9be; --border-color: #ff007f; --border-hover: #ff66b3; }
+      :root.theme-dracula { --accent: #ff79c6; --bg-primary: #21222c; --bg-secondary: #191a21; --bg-tertiary: #282a36; --bg-elevated: #44475a; --text-color: #f8f8f2; --text-secondary: #6272a4; --border-color: #44475a; --border-hover: #6272a4; }
+      :root.theme-nord { --accent: #88c0d0; --bg-primary: #2e3440; --bg-secondary: #242933; --bg-tertiary: #3b4252; --bg-elevated: #4c566a; --text-color: #eceff4; --text-secondary: #d8dee9; --border-color: #4c566a; --border-hover: #81a1c1; }
+      :root.theme-oled { --accent: #3b82f6; --bg-primary: #000; --bg-secondary: #0a0a0a; --bg-tertiary: #141414; --bg-elevated: #222; --text-color: #fff; --text-secondary: #888; --border-color: #222; --border-hover: #3b82f6; }
+      :root.theme-emerald { --accent: #34a853; --bg-primary: #061a14; --bg-secondary: #04120e; --bg-tertiary: #0b2920; --bg-elevated: #134d3b; --text-color: #e6f4ea; --text-secondary: #81c995; --border-color: #134d3b; --border-hover: #34a853; }
+    [hidden] { display: none !important; }
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--bg-elevated) transparent; }
+    html, body {
+        margin: 0;
+        min-height: 100%;
+        background: radial-gradient(circle at 50% -15%, var(--bg-tertiary) 0%, var(--bg-primary) 75%) fixed;
+        background-color: var(--bg-primary);
+        font-family: var(--font);
+        color: var(--text-color);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    body { overflow-y: auto; overflow-x: hidden; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button { font: inherit; color: inherit; }
+    @media (prefers-reduced-motion: reduce) {
+        * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    }
+    body.reduce-effects *, body.reduce-effects *::before, body.reduce-effects *::after { animation: none !important; transition: none !important; backdrop-filter: none !important; }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 70px 20px 40px; display: flex; flex-direction: column; align-items: center; position: relative; min-height: 100vh; }
+    .wrap[hidden] { display: none !important; }
+    .top-left { position: absolute; top: 22px; left: 30px; display: flex; flex-direction: column; gap: 2px; user-select: none; }
+    .clock-time { font-size: 30px; font-weight: 600; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+    .clock-date { font-size: 13px; color: var(--text-secondary); text-transform: capitalize; }
+    .top-bar { position: absolute; top: 20px; right: 30px; display: flex; align-items: center; gap: 12px; }
+    .theme-toggle-btn {
+        background: var(--bg-tertiary); border: 1px solid var(--border-color); width: 48px; height: 48px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; padding: 0;
+        transition: transform .2s ease, background .2s ease, border-color .2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    }
+    .theme-toggle-btn:hover { background: var(--bg-elevated); border-color: var(--border-hover); transform: scale(1.05); }
+    .profile-btn { display: flex; align-items: center; gap: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 6px 16px 6px 6px; border-radius: 32px; cursor: pointer; transition: background .2s ease, border-color .2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.25); }
+    .profile-btn:hover { background: var(--bg-elevated); border-color: var(--border-hover); }
+    .profile-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; overflow: hidden; flex-shrink: 0; }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-info { display: flex; flex-direction: column; text-align: left; }
+    .profile-name { font-size: 14px; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .profile-status { font-size: 11px; color: var(--ok); font-weight: 500; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .network-banner { position: fixed; top: 0; left: 0; width: 100%; background: var(--accent); color: #fff; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(255,71,87,.3); }
+    .network-banner.offline { display: block; }
+    .logo { font-size: 42px; font-weight: 700; letter-spacing: 1px; margin: 24px 0 35px; display: flex; align-items: center; gap: 10px; user-select: none; }
+    .logo span.mark { color: var(--accent); }
+    .searchbar-container { width: 100%; max-width: 680px; position: relative; }
+    .searchbar { width: 100%; display: flex; align-items: center; gap: 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 40px; padding: 10px 12px 10px 24px; box-shadow: 0 15px 45px rgba(0,0,0,0.35); transition: border-color .2s ease, box-shadow .2s ease; }
+    .searchbar:focus-within { border-color: var(--accent); box-shadow: 0 15px 45px rgba(255,71,87,0.25); }
+    .searchbar input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: var(--text-color); font: inherit; font-size: 16px; padding: 10px 0; }
+    .suggestions-dropdown {
+        position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--bg-secondary); border: 1px solid var(--border-color);
+        border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); display: none; flex-direction: column; overflow: hidden; z-index: 50; padding: 6px 0;
+    }
+    .suggestions-dropdown.active { display: flex; }
+    .suggestion-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 24px 4px; font-size: 11px; color: var(--text-secondary); }
+    .suggestion-head button { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 11px; padding: 2px 4px; border-radius: 6px; }
+    .suggestion-head button:hover { color: var(--accent); }
+    .suggestion-item { padding: 10px 24px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: background-color .12s ease; }
+    .suggestion-item .s-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .suggestion-item .s-del { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 12px; padding: 2px 6px; border-radius: 6px; opacity: 0; }
+    .suggestion-item:hover .s-del, .suggestion-item.selected .s-del { opacity: 1; }
+    .suggestion-item .s-del:hover { color: var(--accent); }
+    .suggestion-item:hover, .suggestion-item.selected { background: var(--bg-tertiary); color: var(--accent); }
+    .ai-toggle { display: flex; align-items: center; gap: 6px; background: var(--bg-tertiary); border: 1px solid var(--border-color); padding: 10px 18px; border-radius: 30px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-secondary); user-select: none; white-space: nowrap; transition: background-color .2s ease, color .2s ease; }
+    .ai-toggle:hover { background: var(--bg-elevated); color: var(--text-color); }
+    .ai-toggle.active { background: linear-gradient(90deg, var(--accent), var(--accent-2)); color: #fff; border-color: transparent; box-shadow: 0 4px 15px rgba(255,71,87,0.35); }
+    .engine-pill { font-size: 13px; color: var(--text-secondary); margin-top: 16px; }
+    .engine-pill b { color: var(--accent); cursor: pointer; }
+    .hint { font-size: 11px; color: var(--text-secondary); margin-top: 4px; opacity: .75; }
+    .grid { margin-top: 45px; display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 22px; width: 100%; max-width: 760px; }
+    .tile { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; padding: 18px 10px; border-radius: 20px; transition: transform .15s ease, background-color .15s ease, border-color .15s ease; position: relative; background: var(--bg-tertiary); border: 1px solid var(--border-color); color: inherit; text-decoration: none; font: inherit; }
+    .tile:hover, .tile:focus-visible { border-color: var(--border-hover); transform: translateY(-4px); }
+    .tile.drag-over { border-color: var(--accent); background: var(--bg-elevated); }
+    .tile.dragging { opacity: .4; }
+    .tile .icon-box { position: relative; width: 60px; height: 60px; border-radius: 18px; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; transition: border-color .15s; font-size: 0; color: transparent; }
+    .tile:hover .icon-box { border-color: var(--accent); }
+    .tile .icon-box img { position: static; display: block; width: 34px; height: 34px; object-fit: contain; background: var(--bg-secondary); flex: 0 0 auto; margin: auto; }
+    .tile .name { font-size: 13px; text-align: center; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+    .tile .tile-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 4px; z-index: 2; }
+    .tile:hover .tile-actions, .tile:focus-within .tile-actions { display: flex; }
+    .tile .tile-actions span { width: 24px; height: 24px; border-radius: 50%; background: var(--bg-elevated); color: var(--text-color); font-size: 12px; display: flex; align-items: center; justify-content: center; transition: background-color .15s; }
+    .tile .tile-actions span:hover { background: var(--accent); color: #fff; }
+    html[data-ui-scale="compact"] .tile { transform: scale(.94); }
+    html[data-ui-scale="large"] .tile, html[data-ui-scale="board"] .tile { padding: 24px 14px; }
+    html[data-ui-scale="board"] .tile .icon-box { width: 72px; height: 72px; }
+    html.touch-mode .tile { min-height: 150px; }
+    html.touch-mode .tile .icon-box { width: 74px; height: 74px; }
+    html[data-font-scale="small"] { font-size: 14px; }
+    html[data-font-scale="large"] { font-size: 17px; }
+    html.touch-mode .ghost-btn, html.touch-mode .theme-toggle-btn, html.touch-mode .profile-btn { min-height: 48px; }
+    .tile.add .icon-box { border-style: dashed; color: var(--text-secondary); font-size: 28px; background: transparent; }
+    @media (hover: none) { .tile .tile-actions { display: flex; } }
+    .grid-tools { width: 100%; max-width: 760px; display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+    .ghost-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 6px 12px; border-radius: 10px; font-size: 12px; cursor: pointer; transition: color .15s, border-color .15s; }
+    .ghost-btn:hover { color: var(--text-color); border-color: var(--border-hover); }
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); z-index: 100; align-items: center; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { width: 420px; max-width: 92vw; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 24px; padding: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.6); }
+    .modal h3 { margin: 0 0 20px; font-size: 18px; font-weight: 600; }
+    .modal input, .modal select, .settings-card input, .settings-card select {
+        width: 100%; background: var(--bg-tertiary); border: 1px solid var(--border-color);
+        border-radius: 14px; padding: 14px; color: var(--text-color); margin-bottom: 14px; font: inherit; font-size: 14px;
+        outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    .modal input:focus, .modal select:focus, .settings-card input:focus, .settings-card select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,71,87,0.15); }
+    select option { background: var(--bg-secondary); color: var(--text-color); }
+    .modal .row { display: flex; gap: 12px; margin-top: 10px; }
+    .modal button { flex: 1; padding: 14px; border: none; border-radius: 14px; font-weight: 600; font-size: 14px; cursor: pointer; transition: transform .15s, filter .15s; }
+    .modal .save { background: var(--accent); color: #fff; }
+    .modal .save:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .modal .cancel { background: var(--bg-elevated); color: var(--text-secondary); }
+    .modal .cancel:hover { filter: brightness(1.1); }
+    .view-container { display: none; width: 100%; max-width: 860px; margin: 0 auto; padding: 50px 20px; }
+    .view-container.active { display: block; }
+    .view-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
+    .view-header h2 { margin: 0; font-size: 24px; }
+    .back-btn { background: var(--bg-elevated); border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: transform .15s; }
+    .back-btn:hover { transform: scale(1.03); }
+    .settings-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 20px; padding: 26px; margin-bottom: 22px; }
+    .settings-card h4 { margin: 0 0 6px; font-size: 15px; color: var(--accent); letter-spacing: 0.3px; }
+    .settings-card .sub { font-size: 12px; color: var(--text-secondary); margin: 0 0 16px; }
+    .settings-card label { display: block; font-size: 12px; color: var(--text-secondary); margin: 0 0 6px 4px; }
+    .account-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    .account-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-tertiary); padding: 14px 18px; border-radius: 14px; border: 1px solid var(--border-color); }
+    .account-info { display: flex; align-items: center; gap: 14px; font-size: 14px; min-width: 0; }
+    .acc-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; overflow: hidden; flex-shrink: 0; }
+    .acc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .acc-text { min-width: 0; }
+    .acc-name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .acc-user { color: var(--text-secondary); font-size: 12px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .acc-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .acc-active { color: var(--ok); font-size: 13px; font-weight: 600; margin-right: 8px; }
+    .mini-btn { background: var(--accent); border: none; color: #fff; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600; }
+    .mini-btn.danger { background: var(--bg-elevated); color: var(--accent); }
+    .avatar-drop { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+    .avatar-preview { width: 64px; height: 64px; border-radius: 50%; background: var(--bg-tertiary); border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; font-size: 22px; font-weight: 700; color: var(--text-secondary); cursor: pointer; transition: border-color .15s; }
+    .avatar-preview.has-img { border-style: solid; }
+    .avatar-preview:hover { border-color: var(--accent); }
+    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar-actions { display: flex; flex-direction: column; gap: 6px; }
+    .avatar-actions button { font-size: 12px; padding: 7px 12px; border-radius: 99px; border: 1px solid var(--border-color); background: var(--bg-tertiary); cursor: pointer; }
+    .avatar-actions button:hover { border-color: var(--border-hover); }
+    .avatar-drop.over .avatar-preview { border-color: var(--accent); }
+    .auth-btn { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: #fff; font-weight: 600; font-size: 15px; cursor: pointer; transition: transform .15s, filter .15s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .auth-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+    .auth-btn.secondary { background: var(--bg-elevated); color: var(--text-color); }
+    .auth-btn.inline { width: auto; padding: 10px 18px; }
+    #toast-stack { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000001; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; width: max-content; max-width: 92vw; }
+    .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); padding: 10px 16px; border-radius: 10px; font-size: 13px; box-shadow: 0 10px 30px rgba(0,0,0,.4); opacity: 0; transform: translateY(-8px); transition: opacity .2s ease, transform .2s ease; }
+    .toast.show { opacity: 1; transform: none; }
+    .toast.error { border-color: #f38ba8; color: #ffd7e0; }
+    @media (max-width: 700px) {
+        .top-left { display: none; }
+        .profile-info { display: none; }
+        .profile-btn { padding: 6px; }
+        .logo { font-size: 34px; }
+    }
+</style>
+</head>
+<body>
+
+<div id="netBanner" class="network-banner" role="alert">İnternet bağlantınız yok! Lütfen bağlantınızı kontrol edin.</div>
+<div id="toast-stack" aria-live="polite"></div>
+
+<div class="wrap" id="homeView">
+  <div class="top-left" aria-hidden="true">
+    <div class="clock-time" id="clockTime"></div>
+    <div class="clock-date" id="clockDate"></div>
+  </div>
+
+  <div class="top-bar">
+    <button class="theme-toggle-btn" id="themeToggleBtn" type="button" title="Temayı Değiştir (Ctrl+Shift+D)" aria-label="Temayı değiştir">🌙</button>
+    <div class="profile-btn" id="profileBtn" role="button" tabindex="0" title="Profil ve ayarlar">
+      <div class="profile-avatar" id="profileAvatar">M</div>
+      <div class="profile-info">
+        <div class="profile-name" id="profileName">Misafir</div>
+        <div class="profile-status" id="profileStatusText">Profil Seçilmedi</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="logo">Anka <span class="mark">Web</span></div>
+
+  <div class="searchbar-container">
+    <div class="searchbar">
+      <input id="q" type="text" placeholder="Arayın ya da bir adres yazın... (odaklamak için &quot;/&quot;)" autofocus autocomplete="off" spellcheck="false" autocapitalize="off" role="combobox" aria-expanded="false" aria-controls="suggestions" aria-autocomplete="list">
+      <div class="ai-toggle" id="aiToggle" role="button" tabindex="0" aria-pressed="false">✦ AI Modu</div>
+    </div>
+    <div class="suggestions-dropdown" id="suggestions" role="listbox"></div>
+  </div>
+  <div class="engine-pill">Arama motoru: <b id="engineLabel" role="button" tabindex="0" title="Değiştirmek için tıklayın">Google</b></div>
+  <div class="hint">Kısayollar: !yt !w !gh !so !tr !maps</div>
+
+  <div class="grid" id="grid"></div>
+  <div class="grid-tools">
+    <button class="ghost-btn" id="exportBtn" type="button">Dışa Aktar</button>
+    <button class="ghost-btn" id="importBtn" type="button">İçe Aktar</button>
+    <input type="file" id="importFile" accept="application/json" hidden>
+  </div>
+</div>
+
+<div class="view-container" id="authView">
+  <div class="view-header">
+    <h2>Profil ve Ayarlar</h2>
+    <button class="back-btn" id="backBtn" type="button">Geri Dön</button>
+  </div>
+
+  <div class="settings-card">
+    <h4>Arama Motoru</h4>
+    <p class="sub">Adres çubuğuna yazdığınız aramaların gönderileceği motor.</p>
+    <select id="engineSelect" aria-label="Arama motoru">
+      <option value="google">Google</option>
+      <option value="yandex">Yandex</option>
+      <option value="bing">Bing</option>
+      <option value="duckduckgo">DuckDuckGo</option>
+      <option value="custom">Özel</option>
+    </select>
+    <div id="customEngineRow" hidden>
+      <label for="customEngineUrl">Özel arama adresi (arama sözcüğü için %s kullanın)</label>
+      <input type="text" id="customEngineUrl" placeholder="https://www.google.com/search?q=%s" spellcheck="false" autocapitalize="off">
+    </div>
+    <label for="aiProviderSelect">AI Modu sağlayıcısı</label>
+    <select id="aiProviderSelect" aria-label="AI sağlayıcısı">
+      <option value="google-ai">Google AI Modu</option>
+      <option value="chatgpt">ChatGPT</option>
+      <option value="gemini">Gemini</option>
+      <option value="perplexity">Perplexity</option>
+    </select>
+  </div>
+
+  <div class="settings-card">
+    <h4>Görünüm</h4>
+    <p class="sub">Uygulama genelinde koyu ya da açık tema kullan.</p>
+    <div class="account-item">
+      <div class="account-info">🎨 Koyu Tema Modu</div>
+      <button class="auth-btn secondary inline" id="themeSettingsBtn" type="button">Değiştir</button>
+    </div>
+  </div>
+
+  <div class="settings-card">
+    <h4>Kayıtlı Profiller</h4>
+    <p class="sub">Bunlar sadece bu cihazda, tarayıcı içinde tutulan yerel profillerdir — herhangi bir hesaba giriş yapılmaz.</p>
+    <div class="account-list" id="accountList"></div>
+    <button class="auth-btn secondary" id="newProfileBtn" type="button">+ Yeni Yerel Profil Oluştur</button>
+  </div>
+
+  <div class="settings-card">
+    <h4>Aktif Profili Düzenle</h4>
+    <p class="sub">Kullanıcı adınızı, görünen adınızı ve profil fotoğrafınızı değiştirin.</p>
+
+    <div class="avatar-drop" id="avatarDrop">
+      <div class="avatar-preview" id="avatarPreview" role="button" tabindex="0">+</div>
+      <div class="avatar-actions">
+        <button type="button" id="avatarPickBtn">Fotoğraf Yükle (PNG/JPG)</button>
+        <button type="button" id="avatarClearBtn">Kaldır</button>
+      </div>
+      <input type="file" id="localAvatarFile" accept="image/png,image/jpeg" hidden>
+    </div>
+    <p class="hint">Sürükleyip bırakabilir ya da tıklayıp seçebilirsiniz. Görsel otomatik olarak küçültülür.</p>
+
+    <input type="text" id="editUsername" placeholder="Kullanıcı Adı (ör. anka_kullanici)" maxlength="24" autocomplete="off" spellcheck="false">
+    <input type="text" id="editName" placeholder="Görünen Ad" maxlength="40" autocomplete="off">
+    <button class="auth-btn" id="saveProfileBtn" type="button">Değişiklikleri Kaydet</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Kısayol Ekle</h3>
+    <input id="m-name" type="text" placeholder="Ad (ör. YouTube)" maxlength="60" autocomplete="off">
+    <input id="m-url" type="text" placeholder="Adres (ör. https://youtube.com)" autocomplete="off" spellcheck="false" autocapitalize="off">
+    <div class="row">
+      <button class="cancel" id="modalCancel" type="button">Vazgeç</button>
+      <button class="save" id="modalSave" type="button">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULTS = [
+  { name: 'YouTube', url: 'https://youtube.com' },
+  { name: 'Wikipedia', url: 'https://wikipedia.org' },
+  { name: 'Gmail', url: 'https://mail.google.com' },
+  { name: 'Harita', url: 'https://maps.google.com' }
+];
+
+const ENGINES = {
+  google: { name: 'Google', tpl: 'https://www.google.com/search?q=%s' },
+  yandex: { name: 'Yandex', tpl: 'https://yandex.com.tr/search/?text=%s' },
+  bing: { name: 'Bing', tpl: 'https://www.bing.com/search?q=%s' },
+  duckduckgo: { name: 'DuckDuckGo', tpl: 'https://duckduckgo.com/?q=%s' }
+};
+
+const AI_PROVIDERS = {
+  'google-ai': { tpl: 'https://www.google.com/search?q=%s&udm=50' },
+  chatgpt: { tpl: 'https://chatgpt.com/?q=%s' },
+  gemini: { tpl: 'https://gemini.google.com/app' },
+  perplexity: { tpl: 'https://www.perplexity.ai/search?q=%s' }
+};
+
+const BANGS = {
+  yt: 'https://www.youtube.com/results?search_query=%s',
+  w: 'https://tr.wikipedia.org/w/index.php?search=%s',
+  gh: 'https://github.com/search?q=%s',
+  so: 'https://stackoverflow.com/search?q=%s',
+  tr: 'https://translate.google.com/?sl=auto&tl=tr&text=%s&op=translate',
+  maps: 'https://www.google.com/maps/search/%s'
+};
+
+const MAX_SHORTCUTS = 60;
+const MAX_RECENTS = 8;
+const $ = (id) => document.getElementById(id);
+const framed = window.parent !== window;
+const themeChannel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('theme_settings') : { postMessage() {}, onmessage: null };
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function debounce(fn, wait) {
+  let timer = 0;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
+
+const store = {
+  json(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (err) {
+      return fallback;
+    }
+  },
+  setJson(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+};
+
+function getSetting(id, def) {
+  try {
+    const value = localStorage.getItem('set_' + id);
+    return value === null ? def : value;
+  } catch (err) {
+    return def;
+  }
+}
+
+function setSetting(id, value) {
+  try {
+    localStorage.setItem('set_' + id, value);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
+
+function showToast(message, type = 'info') {
+  const stack = $('toast-stack');
+  while (stack.children.length >= 4) stack.firstElementChild.remove();
+  const node = el('div', type === 'error' ? 'toast error' : 'toast', message);
+  node.setAttribute('role', type === 'error' ? 'alert' : 'status');
+  stack.appendChild(node);
+  requestAnimationFrame(() => node.classList.add('show'));
+  setTimeout(() => {
+    node.classList.remove('show');
+    setTimeout(() => node.remove(), 250);
+  }, 3000);
+}
+
+function normalizeUrl(input) {
+  let value = String(input || '').trim();
+  if (!value) return '';
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) value = 'https://' + value;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+    if (!parsed.hostname) return '';
+    return parsed.href;
+  } catch (err) {
+    return '';
+  }
+}
+
+function navigate(url) {
+  if (!url) return;
+  if (framed) {
+    window.parent.postMessage({ type: 'anka-navigate', url }, '*');
+  } else {
+    window.location.href = url;
+  }
+}
+
+const timeFmt = new Intl.DateTimeFormat('tr-TR', { hour: '2-digit', minute: '2-digit' });
+const dateFmt = new Intl.DateTimeFormat('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' });
+let clockTimer = 0;
+
+function tickClock() {
+  clearTimeout(clockTimer);
+  const now = new Date();
+  $('clockTime').textContent = timeFmt.format(now);
+  $('clockDate').textContent = dateFmt.format(now);
+  if (!document.hidden) {
+    clockTimer = setTimeout(tickClock, 60000 - (now.getSeconds() * 1000 + now.getMilliseconds()) + 50);
+  }
+}
+
+function applyThemeState(isDark) {
+  document.documentElement.classList.toggle('light-theme', !isDark);
+  document.body.classList.toggle('light-theme', !isDark);
+  $('themeToggleBtn').textContent = isDark ? '🌙' : '☀️';
+}
+
+function applySavedTheme() {
+  const stored = getSetting('dark-mode', null);
+  applyThemeState(stored === null ? true : stored === 'true');
+  document.body.classList.toggle('reduce-effects', getSetting('reduce-effects', 'false') === 'true');
+}
+
+function toggleTheme() {
+    const nextIsDark = document.body.classList.contains('light-theme');
+    setSetting('dark-mode', nextIsDark ? 'true' : 'false');
+    applyThemeState(nextIsDark);
+    themeChannel.postMessage({ id: 'dark-mode', val: nextIsDark });
+}
+
+themeChannel.onmessage = (event) => {
+  if (event.data && event.data.id === 'dark-mode') applyThemeState(event.data.val);
+};
+
+function checkNetwork() {
+  $('netBanner').classList.toggle('offline', !navigator.onLine);
+}
+
+function slugifyUsername(str) {
+  return (str || '')
+    .toLowerCase()
+    .replace(/ı/g, 'i')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9_]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 24) || 'kullanici';
+}
+
+const GUEST = Object.freeze({ username: 'misafir', name: 'Misafir', avatar: '' });
+
+function getAccounts() {
+  const list = store.json('anka_accounts', null);
+  if (!Array.isArray(list) || !list.length) return [{ ...GUEST }];
+  const clean = list
+    .filter((acc) => acc && typeof acc === 'object')
+    .map((acc) => ({
+      username: acc.username ? String(acc.username) : slugifyUsername(acc.name || String(acc.email || '').split('@')[0]),
+      name: String(acc.name || 'Kullanıcı').slice(0, 40),
+      avatar: typeof acc.avatar === 'string' && acc.avatar.startsWith('data:image/') ? acc.avatar : ''
+    }));
+  return clean.length ? clean : [{ ...GUEST }];
+}
+
+function setAccounts(list) {
+  if (!store.setJson('anka_accounts', list)) showToast('Kayıt için yeterli alan yok.', 'error');
+}
+
+function getCurrentUser() {
+  const current = store.json('anka_current_user', null);
+  if (current && current.username) return current;
+  return getAccounts()[0];
+}
+
+function setCurrentUser(user) {
+  store.setJson('anka_current_user', user);
+}
+
+function avatarContent(user) {
+  const initial = (user.name || user.username || '?')[0].toUpperCase();
+  if (!user.avatar) return document.createTextNode(initial);
+  const img = document.createElement('img');
+  img.alt = '';
+  img.decoding = 'async';
+  img.src = user.avatar;
+  img.addEventListener('error', () => img.replaceWith(document.createTextNode(initial)), { once: true });
+  return img;
+}
+
+function updateAuthUI() {
+  const user = getCurrentUser();
+  const avatarEl = $('profileAvatar');
+  const nameEl = $('profileName');
+  const statusEl = $('profileStatusText');
+
+  if (user && user.username !== 'misafir') {
+    nameEl.textContent = user.name || user.username;
+    statusEl.textContent = '@' + user.username;
+    statusEl.style.color = 'var(--ok)';
+    avatarEl.style.background = 'var(--accent)';
+    avatarEl.replaceChildren(avatarContent(user));
+  } else {
+    nameEl.textContent = 'Misafir';
+    statusEl.textContent = 'Profil Seçilmedi';
+    statusEl.style.color = 'var(--text-secondary)';
+    avatarEl.style.background = 'var(--bg-elevated)';
+    avatarEl.textContent = 'M';
+  }
+}
+
+let draftMode = false;
+
+function renderAccountList() {
+  const accounts = getAccounts();
+  const current = getCurrentUser();
+  const fragment = document.createDocumentFragment();
+
+  accounts.forEach((acc, idx) => {
+    const item = el('div', 'account-item');
+    const info = el('div', 'account-info');
+    const avatar = el('div', 'acc-avatar');
+    avatar.appendChild(avatarContent(acc));
+    const text = el('div', 'acc-text');
+    text.append(el('div', 'acc-name', acc.name || acc.username), el('div', 'acc-user', '@' + acc.username));
+    info.append(avatar, text);
+
+    const actions = el('div', 'acc-actions');
+    if (current && current.username === acc.username) {
+      actions.appendChild(el('span', 'acc-active', 'Aktif'));
+    } else {
+      const pick = el('button', 'mini-btn', 'Seç');
+      pick.type = 'button';
+      pick.dataset.action = 'switch';
+      pick.dataset.idx = String(idx);
+      actions.appendChild(pick);
+    }
+    const remove = el('button', 'mini-btn danger', 'Kaldır');
+    remove.type = 'button';
+    remove.dataset.action = 'remove';
+    remove.dataset.idx = String(idx);
+    actions.appendChild(remove);
+
+    item.append(info, actions);
+    fragment.appendChild(item);
+  });
+
+  $('accountList').replaceChildren(fragment);
+}
+
+function switchAccount(idx) {
+  const accounts = getAccounts();
+  const target = accounts[idx];
+  if (!target) return;
+  draftMode = false;
+  setCurrentUser(target);
+  fillProfileForm(target);
+  renderAccountList();
+  updateAuthUI();
+  showToast('"' + (target.name || target.username) + '" profiline geçildi.');
+}
+
+function removeAccount(idx) {
+  const accounts = getAccounts();
+  if (!accounts[idx]) return;
+  const wasCurrent = getCurrentUser().username === accounts[idx].username;
+  accounts.splice(idx, 1);
+  if (!accounts.length) accounts.push({ ...GUEST });
+  setAccounts(accounts);
+  if (wasCurrent) setCurrentUser(accounts[0]);
+  draftMode = false;
+  fillProfileForm(getCurrentUser());
+  renderAccountList();
+  updateAuthUI();
+}
+
+function startNewProfile() {
+  draftMode = true;
+  fillProfileForm({ username: '', name: '', avatar: '' });
+  $('editUsername').focus();
+  showToast('Yeni profil için kullanıcı adı ve ad girin, ardından kaydedin.');
+}
+
+let pendingAvatarDataUrl = '';
+
+function compressImage(file, maxDim = 128, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    if (!/^image\/(png|jpe?g)$/i.test(file.type)) { reject(new Error('Sadece PNG veya JPG dosyaları desteklenir.')); return; }
+    if (file.size > 8 * 1024 * 1024) { reject(new Error('Dosya çok büyük (maksimum 8MB).')); return; }
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Görsel yüklenemedi. Dosya bozuk olabilir.')); };
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+      const width = Math.max(1, Math.round(img.naturalWidth * scale));
+      const height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = objectUrl;
+  });
+}
+
+async function handleAvatarFile(file) {
+  if (!file) return;
+  try {
+    pendingAvatarDataUrl = await compressImage(file);
+    renderAvatarPreview(pendingAvatarDataUrl);
+  } catch (err) {
+    showToast(err.message || 'Fotoğraf yüklenemedi.', 'error');
+  }
+}
+
+function renderAvatarPreview(dataUrl) {
+  const box = $('avatarPreview');
+  if (dataUrl) {
+    const img = document.createElement('img');
+    img.alt = '';
+    img.src = dataUrl;
+    box.replaceChildren(img);
+    box.classList.add('has-img');
+  } else {
+    const name = $('editName').value || $('editUsername').value || '';
+    box.textContent = name ? name[0].toUpperCase() : '+';
+    box.classList.remove('has-img');
+  }
+}
+
+function clearAvatarPreview() {
+  pendingAvatarDataUrl = '';
+  renderAvatarPreview('');
+}
+
+function fillProfileForm(user) {
+  const isGuest = user.username === 'misafir';
+  $('editUsername').value = isGuest ? '' : (user.username || '');
+  $('editName').value = isGuest ? '' : (user.name || '');
+  pendingAvatarDataUrl = user.avatar || '';
+  renderAvatarPreview(pendingAvatarDataUrl);
+}
+
+function saveProfile() {
+  const rawUsername = $('editUsername').value.trim();
+  const name = $('editName').value.trim();
+
+  if (!rawUsername) { showToast('Lütfen bir kullanıcı adı girin.', 'error'); return; }
+  const username = slugifyUsername(rawUsername);
+  if (username.length < 3) { showToast('Kullanıcı adı en az 3 karakter olmalı.', 'error'); return; }
+  if (!name) { showToast('Lütfen bir ad girin.', 'error'); return; }
+
+  const accounts = getAccounts();
+  const current = getCurrentUser();
+  const editingIdx = !draftMode && current.username !== 'misafir' ? accounts.findIndex((a) => a.username === current.username) : -1;
+
+  if (accounts.some((a, i) => a.username === username && i !== editingIdx)) {
+    showToast('Bu kullanıcı adı zaten kullanılıyor, başka bir tane seçin.', 'error');
+    return;
+  }
+
+  const profile = { username, name, avatar: pendingAvatarDataUrl };
+  if (editingIdx !== -1) accounts[editingIdx] = profile;
+  else accounts.push(profile);
+
+  draftMode = false;
+  setAccounts(accounts);
+  setCurrentUser(profile);
+  renderAccountList();
+  updateAuthUI();
+  showToast('Profil kaydedildi.');
+}
+
+function getShortcuts() {
+  const raw = store.json('anka_shortcuts', null);
+  if (!Array.isArray(raw)) {
+    store.setJson('anka_shortcuts', DEFAULTS);
+    return DEFAULTS.map((s) => ({ ...s }));
+  }
+  const out = [];
+  for (const item of raw) {
+    if (!item || typeof item.name !== 'string' || typeof item.url !== 'string') continue;
+    const url = normalizeUrl(item.url);
+    if (url) out.push({ name: item.name.slice(0, 60), url });
+  }
+  return out;
+}
+
+function setShortcuts(list) {
+  if (!store.setJson('anka_shortcuts', list)) showToast('Kısayollar kaydedilemedi.', 'error');
+}
+
+function hostOf(url) {
+  try {
+    return new URL(url).hostname;
+  } catch (err) {
+    return '';
+  }
+}
+
+let editIndex = -1;
+let dragSrcIndex = -1;
+let dragOverEl = null;
+
+function renderGrid() {
+  const list = getShortcuts();
+  const fragment = document.createDocumentFragment();
+
+  list.forEach((shortcut, index) => {
+    const tile = el('a', 'tile');
+    tile.href = shortcut.url;
+    tile.draggable = true;
+    tile.dataset.idx = String(index);
+    tile.title = shortcut.name;
+
+    const actions = el('div', 'tile-actions');
+    const edit = el('span', '', '✎');
+    edit.dataset.action = 'edit';
+    edit.setAttribute('role', 'button');
+    edit.setAttribute('aria-label', 'Düzenle');
+    const del = el('span', '', '✕');
+    del.dataset.action = 'del';
+    del.setAttribute('role', 'button');
+    del.setAttribute('aria-label', 'Sil');
+    actions.append(edit, del);
+
+    const iconBox = el('div', 'icon-box');
+    const host = hostOf(shortcut.url);
+    if (host) {
+      const img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      img.draggable = false;
+      img.src = 'https://www.google.com/s2/favicons?sz=64&domain=' + encodeURIComponent(host);
+      iconBox.appendChild(img);
+    }
+
+    tile.append(actions, iconBox, el('div', 'name', shortcut.name));
+    fragment.appendChild(tile);
+  });
+
+  if (list.length < MAX_SHORTCUTS) {
+    const add = el('button', 'tile add');
+    add.type = 'button';
+    add.append(el('div', 'icon-box', '＋'), el('div', 'name', 'Ekle'));
+    fragment.appendChild(add);
+  }
+
+  $('grid').replaceChildren(fragment);
+}
+
+function setupGrid() {
+  const grid = $('grid');
+
+  grid.addEventListener('error', (event) => {
+    if (event.target.tagName === 'IMG') event.target.remove();
+  }, true);
+
+  grid.addEventListener('click', (event) => {
+    const tile = event.target.closest('.tile');
+    if (!tile) return;
+    if (tile.classList.contains('add')) { openModal(-1); return; }
+    const index = Number(tile.dataset.idx);
+    const action = event.target.closest('[data-action]');
+    if (action) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (action.dataset.action === 'del') removeShortcut(index);
+      else openModal(index);
+      return;
+    }
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    navigate(tile.href);
+  });
+
+  grid.addEventListener('keydown', (event) => {
+    const tile = event.target.closest('.tile');
+    if (!tile || tile.classList.contains('add')) return;
+    const index = Number(tile.dataset.idx);
+    if (event.altKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault();
+      const list = getShortcuts();
+      const to = index + (event.key === 'ArrowLeft' ? -1 : 1);
+      if (to < 0 || to >= list.length) return;
+      const [moved] = list.splice(index, 1);
+      list.splice(to, 0, moved);
+      setShortcuts(list);
+      renderGrid();
+      const next = grid.querySelector('.tile[data-idx="' + to + '"]');
+      if (next) next.focus();
+    } else if (event.key === 'Delete') {
+      event.preventDefault();
+      removeShortcut(index);
+    } else if (event.key === 'F2') {
+      event.preventDefault();
+      openModal(index);
+    }
+  });
+
+  grid.addEventListener('dblclick', (event) => {
+    const tile = event.target.closest('.tile');
+    if (!tile || tile.classList.contains('add')) return;
+    event.preventDefault();
+    openModal(Number(tile.dataset.idx));
+  });
+
+  grid.addEventListener('dragstart', (event) => {
+    const tile = event.target.closest && event.target.closest('.tile');
+    if (!tile || tile.classList.contains('add')) return;
+    dragSrcIndex = Number(tile.dataset.idx);
+    tile.classList.add('dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', tile.href);
+  });
+
+  grid.addEventListener('dragend', () => {
+    dragSrcIndex = -1;
+    grid.querySelectorAll('.dragging, .drag-over').forEach((node) => node.classList.remove('dragging', 'drag-over'));
+    dragOverEl = null;
+  });
+
+  grid.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    const tile = event.target.closest('.tile');
+    if (tile === dragOverEl) return;
+    if (dragOverEl) dragOverEl.classList.remove('drag-over');
+    dragOverEl = tile && !tile.classList.contains('add') ? tile : null;
+    if (dragOverEl) dragOverEl.classList.add('drag-over');
+  });
+
+  grid.addEventListener('drop', (event) => {
+    event.preventDefault();
+    const tile = event.target.closest('.tile');
+    const list = getShortcuts();
+
+    if (dragSrcIndex !== -1) {
+      if (!tile || tile.classList.contains('add')) return;
+      const to = Number(tile.dataset.idx);
+      if (to === dragSrcIndex) return;
+      const [moved] = list.splice(dragSrcIndex, 1);
+      list.splice(to, 0, moved);
+      setShortcuts(list);
+      renderGrid();
+      return;
+    }
+
+    const dropped = event.dataTransfer.getData('text/uri-list') || event.dataTransfer.getData('text/plain');
+    const url = normalizeUrl(String(dropped).split('\n')[0]);
+    if (!url) return;
+    if (list.length >= MAX_SHORTCUTS) { showToast('Kısayol sınırına ulaşıldı.', 'error'); return; }
+    list.push({ name: hostOf(url).replace(/^www\./, ''), url });
+    setShortcuts(list);
+    renderGrid();
+    showToast('Kısayol eklendi.');
+  });
+}
+
+function openModal(idx) {
+  editIndex = idx;
+  const list = getShortcuts();
+  $('modalTitle').textContent = idx === -1 ? 'Kısayol Ekle' : 'Kısayolu Düzenle';
+  $('m-name').value = idx === -1 ? '' : list[idx].name;
+  $('m-url').value = idx === -1 ? '' : list[idx].url;
+  $('modal-bg').classList.add('open');
+  $('m-name').focus();
+}
+
+function closeModal() {
+  $('modal-bg').classList.remove('open');
+  $('m-name').value = '';
+  $('m-url').value = '';
+  editIndex = -1;
+}
+
+function saveShortcut() {
+  const name = $('m-name').value.trim();
+  const rawUrl = $('m-url').value.trim();
+  if (!name || !rawUrl) { showToast('Ad ve adres alanları zorunludur.', 'error'); return; }
+  const url = normalizeUrl(rawUrl);
+  if (!url) { showToast('Geçerli bir http veya https adresi girin.', 'error'); return; }
+  const list = getShortcuts();
+  if (editIndex === -1) list.push({ name, url });
+  else list[editIndex] = { name, url };
+  setShortcuts(list);
+  closeModal();
+  renderGrid();
+}
+
+function removeShortcut(index) {
+  const list = getShortcuts();
+  list.splice(index, 1);
+  setShortcuts(list);
+  renderGrid();
+}
+
+function exportShortcuts() {
+  const blob = new Blob([JSON.stringify(getShortcuts(), null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'anka-kisayollar.json';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+function importShortcuts(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!Array.isArray(parsed)) throw new Error('Geçersiz format');
+      const clean = [];
+      for (const item of parsed) {
+        if (!item || !item.name || !item.url) continue;
+        const url = normalizeUrl(item.url);
+        if (url) clean.push({ name: String(item.name).slice(0, 60), url });
+        if (clean.length >= MAX_SHORTCUTS) break;
+      }
+      setShortcuts(clean);
+      renderGrid();
+      showToast(clean.length + ' kısayol içe aktarıldı.');
+    } catch (err) {
+      showToast('Dosya okunamadı, geçerli bir JSON dosyası seçin.', 'error');
+    }
+  };
+  reader.onerror = () => showToast('Dosya okunamadı.', 'error');
+  reader.readAsText(file);
+}
+
+function openAuthView() {
+  $('homeView').hidden = true;
+  $('authView').classList.add('active');
+  draftMode = false;
+  renderAccountList();
+  fillProfileForm(getCurrentUser());
+  const engineId = getSetting('search-engine', 'google');
+  $('engineSelect').value = engineId;
+  $('customEngineRow').hidden = engineId !== 'custom';
+  $('customEngineUrl').value = getSetting('custom-search-url', '');
+  $('aiProviderSelect').value = getSetting('ai-provider', 'google-ai');
+  window.scrollTo(0, 0);
+}
+
+function closeAuthView() {
+  $('authView').classList.remove('active');
+  $('homeView').hidden = false;
+  initUI();
+}
+
+function changeSearchEngine(value) {
+  setSetting('search-engine', value);
+  $('customEngineRow').hidden = value !== 'custom';
+  initUI();
+}
+
+function toggleAI() {
+  const next = !$('aiToggle').classList.contains('active');
+  setSetting('ai-mode-active', next ? 'true' : 'false');
+  initUI();
+}
+
+function initUI() {
+  const engineId = getSetting('search-engine', 'google');
+  const engine = ENGINES[engineId] || ENGINES.google;
+  $('engineLabel').textContent = engineId === 'custom' ? 'Özel' : engine.name;
+  const aiActive = getSetting('ai-mode-active', 'false') === 'true';
+  $('aiToggle').classList.toggle('active', aiActive);
+  $('aiToggle').setAttribute('aria-pressed', String(aiActive));
+  applySavedTheme();
+  updateAuthUI();
+}
+
+function buildSearchUrl(query) {
+  const encoded = encodeURIComponent(query);
+  if (getSetting('ai-mode-active', 'false') === 'true') {
+    const provider = AI_PROVIDERS[getSetting('ai-provider', 'google-ai')] || AI_PROVIDERS['google-ai'];
+    return provider.tpl.replace('%s', encoded);
+  }
+  const engineId = getSetting('search-engine', 'google');
+  if (engineId === 'custom') {
+    const custom = normalizeUrl(getSetting('custom-search-url', '').replace('%s', 'anka'));
+    const template = custom ? getSetting('custom-search-url', '') : ENGINES.google.tpl;
+    return (/^https?:\/\//i.test(template) ? template : 'https://' + template).replace('%s', encoded);
+  }
+  return (ENGINES[engineId] || ENGINES.google).tpl.replace('%s', encoded);
+}
+
+function resolveInput(raw) {
+  const value = raw.trim();
+  if (!value) return { url: '', search: false };
+
+  const bang = /^!(\w+)\s+(.+)$/.exec(value);
+  if (bang && BANGS[bang[1].toLowerCase()]) {
+    return { url: BANGS[bang[1].toLowerCase()].replace('%s', encodeURIComponent(bang[2])), search: true, term: bang[2] };
+  }
+  if (/^https?:\/\/\S+$/i.test(value)) return { url: value, search: false };
+  if (/^(localhost|(\d{1,3}\.){3}\d{1,3})(:\d+)?(\/\S*)?$/i.test(value)) return { url: 'http://' + value, search: false };
+  if (/^([\w-]+\.)+[a-z]{2,}(:\d+)?(\/\S*)?$/i.test(value)) return { url: 'https://' + value, search: false };
+  return { url: buildSearchUrl(value), search: true, term: value };
+}
+
+function getRecents() {
+  const list = store.json('anka_recent_searches', []);
+  return Array.isArray(list) ? list.filter((s) => typeof s === 'string').slice(0, MAX_RECENTS) : [];
+}
+
+function pushRecent(term) {
+  const list = getRecents().filter((s) => s.toLowerCase() !== term.toLowerCase());
+  list.unshift(term.slice(0, 120));
+  store.setJson('anka_recent_searches', list.slice(0, MAX_RECENTS));
+}
+
+function removeRecent(term) {
+  store.setJson('anka_recent_searches', getRecents().filter((s) => s !== term));
+}
+
+const searchInput = $('q');
+const suggestionsEl = $('suggestions');
+const suggestCache = new Map();
+let suggestSeq = 0;
+let suggestController = null;
+let selectedIndex = -1;
+let typedValue = '';
+let currentItems = [];
+
+function hideSuggestions() {
+  suggestionsEl.classList.remove('active');
+  searchInput.setAttribute('aria-expanded', 'false');
+  selectedIndex = -1;
+}
+
+function renderSuggestions(items, kind) {
+  currentItems = items;
+  selectedIndex = -1;
+  if (!items.length) { hideSuggestions(); return; }
+
+  const fragment = document.createDocumentFragment();
+  if (kind === 'recent') {
+    const head = el('div', 'suggestion-head');
+    const clear = el('button', '', 'Geçmişi temizle');
+    clear.type = 'button';
+    clear.dataset.action = 'clear-recents';
+    head.append(el('span', '', 'Son aramalar'), clear);
+    fragment.appendChild(head);
+  }
+
+  items.forEach((text, index) => {
+    const item = el('div', 'suggestion-item');
+    item.dataset.idx = String(index);
+    item.setAttribute('role', 'option');
+    item.append(el('span', '', kind === 'recent' ? '🕘' : '🔍'), el('span', 's-text', text));
+    if (kind === 'recent') {
+      const del = el('button', 's-del', '✕');
+      del.type = 'button';
+      del.dataset.action = 'del-recent';
+      del.setAttribute('aria-label', 'Sil');
+      item.appendChild(del);
+    }
+    fragment.appendChild(item);
+  });
+
+  suggestionsEl.dataset.kind = kind;
+  suggestionsEl.replaceChildren(fragment);
+  suggestionsEl.classList.add('active');
+  searchInput.setAttribute('aria-expanded', 'true');
+}
+
+function normalizeSuggestions(data) {
+  const list = Array.isArray(data) && Array.isArray(data[1]) ? data[1] : [];
+  return list.map((entry) => (Array.isArray(entry) ? entry[0] : entry)).filter((s) => typeof s === 'string').slice(0, 6);
+}
+
+function jsonpSuggest(query, seq) {
+  return new Promise((resolve, reject) => {
+    const name = '__ankaSuggest' + seq;
+    const script = document.createElement('script');
+    const cleanup = () => { delete window[name]; script.remove(); };
+    const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 2500);
+    window[name] = (data) => { clearTimeout(timer); cleanup(); resolve(data); };
+    script.onerror = () => { clearTimeout(timer); cleanup(); reject(new Error('network')); };
+    script.src = 'https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&hl=tr&q=' + encodeURIComponent(query) + '&jsonp=' + name + '&callback=' + name;
+    document.head.appendChild(script);
+  });
+}
+
+async function loadSuggestions(query, seq) {
+  if (suggestCache.has(query)) return suggestCache.get(query);
+  let result = [];
+  if (suggestController) suggestController.abort();
+  suggestController = typeof AbortController === 'function' ? new AbortController() : null;
+  try {
+    const response = await fetch('https://suggestqueries.google.com/complete/search?client=firefox&hl=tr&q=' + encodeURIComponent(query), suggestController ? { signal: suggestController.signal } : undefined);
+    result = normalizeSuggestions(await response.json());
+  } catch (err) {
+    if (err && err.name === 'AbortError') return null;
+    try {
+      result = normalizeSuggestions(await jsonpSuggest(query, seq));
+    } catch (fallbackErr) {
+      result = [];
+    }
+  }
+  if (suggestCache.size > 50) suggestCache.delete(suggestCache.keys().next().value);
+  suggestCache.set(query, result);
+  return result;
+}
+
+const fetchSuggestions = debounce(async (query) => {
+  const seq = ++suggestSeq;
+  const result = await loadSuggestions(query, seq);
+  if (result === null || seq !== suggestSeq || searchInput.value.trim() !== query) return;
+  renderSuggestions(result, 'remote');
+}, 140);
+
+function showRecents() {
+  renderSuggestions(getRecents(), 'recent');
+}
+
+function onSearchInput() {
+  typedValue = searchInput.value;
+  const query = typedValue.trim();
+  suggestSeq += 1;
+  if (!query) { showRecents(); return; }
+  if (query.length < 2) { hideSuggestions(); return; }
+  fetchSuggestions(query);
+}
+
+function executeSearch(raw) {
+  const result = resolveInput(raw);
+  if (!result.url) return;
+  if (result.search && result.term) pushRecent(result.term);
+  hideSuggestions();
+  navigate(result.url);
+}
+
+function moveSelection(step) {
+  const items = suggestionsEl.querySelectorAll('.suggestion-item');
+  if (!items.length) return;
+  selectedIndex += step;
+  if (selectedIndex < -1) selectedIndex = items.length - 1;
+  if (selectedIndex >= items.length) selectedIndex = -1;
+  items.forEach((item, index) => item.classList.toggle('selected', index === selectedIndex));
+  searchInput.value = selectedIndex === -1 ? typedValue : currentItems[selectedIndex];
+}
+
+function setupSearch() {
+  searchInput.addEventListener('input', onSearchInput);
+  searchInput.addEventListener('focus', () => { if (!searchInput.value.trim()) showRecents(); });
+
+  searchInput.addEventListener('keydown', (event) => {
+    if (event.isComposing) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!suggestionsEl.classList.contains('active') && !searchInput.value.trim()) showRecents();
+      moveSelection(1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveSelection(-1);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      executeSearch(searchInput.value);
+    } else if (event.key === 'Escape') {
+      if (suggestionsEl.classList.contains('active')) hideSuggestions();
+      else searchInput.blur();
+    }
+  });
+
+  suggestionsEl.addEventListener('mousedown', (event) => event.preventDefault());
+
+  suggestionsEl.addEventListener('click', (event) => {
+    const action = event.target.closest('[data-action]');
+    if (action) {
+      if (action.dataset.action === 'clear-recents') {
+        store.setJson('anka_recent_searches', []);
+        hideSuggestions();
+      } else {
+        const item = action.closest('.suggestion-item');
+        removeRecent(currentItems[Number(item.dataset.idx)]);
+        showRecents();
+      }
+      return;
+    }
+    const item = event.target.closest('.suggestion-item');
+    if (!item) return;
+    const text = currentItems[Number(item.dataset.idx)];
+    searchInput.value = text;
+    executeSearch(text);
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.searchbar-container')) hideSuggestions();
+  });
+}
+
+function setupAvatarDrop() {
+  const drop = $('avatarDrop');
+  const fileInput = $('localAvatarFile');
+  const pick = () => fileInput.click();
+
+  $('avatarPreview').addEventListener('click', pick);
+  $('avatarPreview').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); pick(); }
+  });
+  $('avatarPickBtn').addEventListener('click', pick);
+  $('avatarClearBtn').addEventListener('click', clearAvatarPreview);
+
+  fileInput.addEventListener('change', (event) => {
+    handleAvatarFile(event.target.files[0]);
+    event.target.value = '';
+  });
+
+  ['dragenter', 'dragover'].forEach((name) => drop.addEventListener(name, (event) => {
+    event.preventDefault();
+    drop.classList.add('over');
+  }));
+  ['dragleave', 'drop'].forEach((name) => drop.addEventListener(name, (event) => {
+    event.preventDefault();
+    drop.classList.remove('over');
+  }));
+  drop.addEventListener('drop', (event) => {
+    const file = event.dataTransfer.files && event.dataTransfer.files[0];
+    if (file) handleAvatarFile(file);
+  });
+
+  ['editName', 'editUsername'].forEach((id) => $(id).addEventListener('input', () => {
+    if (!pendingAvatarDataUrl) renderAvatarPreview('');
+  }));
+}
+
+function setupModal() {
+  $('modalCancel').addEventListener('click', closeModal);
+  $('modalSave').addEventListener('click', saveShortcut);
+  $('modal-bg').addEventListener('mousedown', (event) => {
+    if (event.target === $('modal-bg')) closeModal();
+  });
+  $('modal-bg').addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeModal();
+    else if (event.key === 'Enter' && !event.isComposing) { event.preventDefault(); saveShortcut(); }
+  });
+}
+
+function bindActivate(node, handler) {
+  node.addEventListener('click', handler);
+  node.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handler(); }
+  });
+}
+
+function setupControls() {
+  $('themeToggleBtn').addEventListener('click', toggleTheme);
+  $('themeSettingsBtn').addEventListener('click', toggleTheme);
+  bindActivate($('profileBtn'), openAuthView);
+  bindActivate($('engineLabel'), openAuthView);
+  bindActivate($('aiToggle'), toggleAI);
+  $('backBtn').addEventListener('click', closeAuthView);
+  $('exportBtn').addEventListener('click', exportShortcuts);
+  $('importBtn').addEventListener('click', () => $('importFile').click());
+  $('importFile').addEventListener('change', importShortcuts);
+  $('newProfileBtn').addEventListener('click', startNewProfile);
+  $('saveProfileBtn').addEventListener('click', saveProfile);
+  $('engineSelect').addEventListener('change', (event) => changeSearchEngine(event.target.value));
+  $('customEngineUrl').addEventListener('input', debounce((event) => setSetting('custom-search-url', event.target.value.trim()), 250));
+  $('aiProviderSelect').addEventListener('change', (event) => setSetting('ai-provider', event.target.value));
+
+  $('accountList').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-action]');
+    if (!button) return;
+    const idx = Number(button.dataset.idx);
+    if (button.dataset.action === 'switch') switchAccount(idx);
+    else if (button.dataset.action === 'remove') removeAccount(idx);
+  });
+}
+
+window.addEventListener('keydown', (event) => {
+  const mod = event.ctrlKey || event.metaKey;
+  const key = event.key.toLowerCase();
+  const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement && document.activeElement.tagName);
+
+  if (event.key === '/' && !typing && !mod) {
+    event.preventDefault();
+    if (!$('homeView').hidden) searchInput.focus();
+  } else if (mod && event.shiftKey && key === 'd') {
+    event.preventDefault();
+    toggleTheme();
+  } else if (mod && key === 'l') {
+    event.preventDefault();
+    if (!$('homeView').hidden) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  }
+});
+
+const refresh = debounce(() => {
+  initUI();
+  renderGrid();
+  if ($('authView').classList.contains('active')) renderAccountList();
+}, 30);
+
+window.addEventListener('storage', (event) => {
+  if (event.key === null || event.key.startsWith('set_') || event.key.startsWith('anka_')) refresh();
+});
+
+window.addEventListener('focus', applySavedTheme);
+window.addEventListener('online', checkNetwork);
+window.addEventListener('offline', checkNetwork);
+document.addEventListener('visibilitychange', tickClock);
+
+setupControls();
+setupGrid();
+setupSearch();
+setupAvatarDrop();
+setupModal();
+checkNetwork();
+renderGrid();
+initUI();
+tickClock();
+</script>
+
+<script>
+    (function () {
+        const ua = navigator.userAgent;
+        const root = document.documentElement;
+        const isElectron = /Electron/i.test(ua) || !!(window.process && window.process.versions && window.process.versions.electron);
+        const hint = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ua;
+        const os = /mac|iphone|ipad/i.test(hint) ? 'mac' : /win/i.test(hint) ? 'win' : /linux|x11|cros|android/i.test(hint) ? 'linux' : 'other';
+
+        root.classList.add('os-' + os);
+        if (isElectron) root.classList.add('is-electron');
+        window.ANKA_ENV = Object.freeze({ isElectron: isElectron, os: os, isMac: os === 'mac' });
+
+        try {
+            if (localStorage.getItem('set_dark-mode') === 'false') root.classList.add('light-theme');
+        } catch (err) {}
+
+        if (isElectron) return;
+
+        const nativeCreate = Document.prototype.createElement;
+        const srcDescriptor = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src');
+        const frames = new Set();
+
+        const isAllowed = (url) => {
+            try {
+                const parsed = new URL(url, location.href);
+                return parsed.protocol === 'http:' || parsed.protocol === 'https:' || parsed.protocol === 'file:' || parsed.protocol === 'about:';
+            } catch (err) {
+                return false;
+            }
+        };
+
+        const buildFrame = (doc) => {
+            const frame = nativeCreate.call(doc, 'iframe');
+            frame.className = 'anka-frame';
+            frame.setAttribute('allow', 'fullscreen; autoplay; clipboard-read; clipboard-write; encrypted-media; picture-in-picture; geolocation');
+            const nav = { stack: [], index: -1, loading: false, title: '', muted: false, zoom: 1, internal: false };
+            const emit = (name, props) => frame.dispatchEvent(Object.assign(new Event(name), props || {}));
+            const setNative = (url) => srcDescriptor.set.call(frame, url);
+
+            const go = (url, push) => {
+                if (!url || !isAllowed(url)) return;
+                if (push) {
+                    nav.stack.length = nav.index + 1;
+                    nav.stack.push(url);
+                    nav.index = nav.stack.length - 1;
+                }
+                nav.internal = true;
+                nav.loading = true;
+                nav.title = '';
+                emit('did-start-loading');
+                setNative(url);
+            };
+
+            Object.defineProperty(frame, 'src', {
+                configurable: true,
+                get: () => srcDescriptor.get.call(frame),
+                set: (value) => go(String(value), true)
+            });
+
+            frame.addEventListener('load', () => {
+                nav.loading = false;
+                let url = nav.stack[nav.index];
+                if (!url) {
+                    const current = srcDescriptor.get.call(frame);
+                    if (current) {
+                        nav.stack.push(current);
+                        nav.index = 0;
+                        url = current;
+                    }
+                }
+                let title = '';
+                try {
+                    title = (frame.contentDocument && frame.contentDocument.title) || '';
+                } catch (err) {}
+                if (!title && url) {
+                    if (/newtab\.html/i.test(url)) {
+                        title = 'Yeni Sekme';
+                    } else {
+                        try {
+                            title = new URL(url, location.href).hostname || url;
+                        } catch (err) {
+                            title = url;
+                        }
+                    }
+                }
+                nav.title = title;
+                nav.internal = false;
+                emit('did-stop-loading');
+                emit('did-navigate', { url: url || '' });
+                emit('dom-ready');
+                emit('page-title-updated', { title: title });
+                try {
+                    const host = new URL(url, location.href).hostname;
+                    if (host) emit('page-favicon-updated', { favicons: ['https://www.google.com/s2/favicons?sz=64&domain=' + host] });
+                } catch (err) {}
+            });
+
+            Object.assign(frame, {
+                getURL: () => nav.stack[nav.index] || srcDescriptor.get.call(frame) || 'about:blank',
+                getTitle: () => nav.title,
+                loadURL: (url) => {
+                    go(String(url), true);
+                    return Promise.resolve();
+                },
+                isLoading: () => nav.loading,
+                canGoBack: () => nav.index > 0,
+                canGoForward: () => nav.index < nav.stack.length - 1,
+                goBack: () => {
+                    if (nav.index > 0) {
+                        nav.index -= 1;
+                        go(nav.stack[nav.index], false);
+                    }
+                },
+                goForward: () => {
+                    if (nav.index < nav.stack.length - 1) {
+                        nav.index += 1;
+                        go(nav.stack[nav.index], false);
+                    }
+                },
+                reload: () => {
+                    const url = nav.stack[nav.index];
+                    if (!url) return;
+                    try {
+                        frame.contentWindow.location.reload();
+                    } catch (err) {
+                        go(url, false);
+                    }
+                },
+                reloadIgnoringCache: () => frame.reload(),
+                stop: () => {
+                    try {
+                        frame.contentWindow.stop();
+                    } catch (err) {}
+                    nav.loading = false;
+                    emit('did-stop-loading');
+                },
+                clearHistory: () => {
+                    const url = nav.stack[nav.index];
+                    nav.stack = url ? [url] : [];
+                    nav.index = url ? 0 : -1;
+                },
+                setAudioMuted: (value) => { nav.muted = !!value; },
+                isAudioMuted: () => nav.muted,
+                isCurrentlyAudible: () => false,
+                setZoomFactor: (value) => {
+                    nav.zoom = Number(value) || 1;
+                    frame.style.zoom = String(nav.zoom);
+                },
+                getZoomFactor: () => nav.zoom,
+                setUserAgent: () => {},
+                getWebContentsId: () => 0,
+                openDevTools: () => {},
+                closeDevTools: () => {},
+                findInPage: () => 0,
+                stopFindInPage: () => {},
+                print: () => {
+                    try {
+                        frame.contentWindow.print();
+                    } catch (err) {}
+                },
+                insertCSS: (css) => {
+                    try {
+                        const style = frame.contentDocument.createElement('style');
+                        style.textContent = css;
+                        frame.contentDocument.head.appendChild(style);
+                    } catch (err) {}
+                    return Promise.resolve('');
+                },
+                executeJavaScript: (code) => new Promise((resolve, reject) => {
+                    try {
+                        resolve(frame.contentWindow.eval(code));
+                    } catch (err) {
+                        reject(err);
+                    }
+                })
+            });
+
+            frames.add(frame);
+            return frame;
+        };
+
+        Document.prototype.createElement = function (tag, options) {
+            if (typeof tag === 'string' && tag.toLowerCase() === 'webview') return buildFrame(this);
+            return nativeCreate.call(this, tag, options);
+        };
+
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (!data || data.type !== 'anka-navigate' || typeof data.url !== 'string') return;
+            frames.forEach((frame) => {
+                if (!frame.isConnected) {
+                    frames.delete(frame);
+                    return;
+                }
+                if (frame.contentWindow === event.source) frame.loadURL(data.url);
+            });
+        });
+    })();
+</script>
+
+</body>
+</html>

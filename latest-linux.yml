@@ -1,6 +1,6 @@
-version: 1.4.6
+version: 1.4.8
 files:
-  - url: anka-web_1.4.6_amd64.deb
+  - url: anka-web_1.4.8_amd64.deb
     sha512: OTO_SHA512
-path: anka-web_1.4.6_amd64.deb
+path: anka-web_1.4.8_amd64.deb
 releaseDate: '2026-07-03T19:14:15.000Z'

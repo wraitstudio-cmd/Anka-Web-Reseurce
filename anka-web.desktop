@@ -2,7 +2,7 @@
 Name=Anka Web
 Comment=Anka Web
 Exec=/opt/anka-web/anka-web --no-sandbox
-Icon=/opt/anka-web/assets/icons/logo.png
+Icon=/opt/anka-web/icons/logo.png
 Terminal=false
 Type=Application
 Categories=Network;WebBrowser;

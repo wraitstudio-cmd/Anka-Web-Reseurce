@@ -114,6 +114,7 @@ function createSettingsPanel() {
                 <div class="settings-nav-item" data-tab="performans">⚡ Performans</div>
                 <div class="settings-nav-item" data-tab="gizlilik">🔒 Gizlilik ve Güvenlik</div>
                 <div class="settings-nav-item" data-tab="gorunum">🎨 Görünüm</div>
+                <div class="settings-nav-item" data-tab="gelismis">🛠️ Gelişmiş</div>
                 <div class="settings-nav-item" id="reset-settings-btn" style="color:#f28b82; margin-top: auto;">🗑️ Ayarları Sıfırla</div>
             </div>
             <div class="settings-content" id="settings-body"></div>
@@ -150,24 +151,27 @@ function createSettingsPanel() {
 }
 
 const settingsData = {
-genel: [
-    { id: 'notifications', label: 'Bildirimler', desc: 'Uygulama içi anlık bildirimlere izin ver', type: 'toggle', default: true },
-    { id: 'auto-save', label: 'Otomatik Kayıt', desc: 'Çalışma alanını, ayarları ve çizimleri otomatik olarak kaydet', type: 'toggle', default: true },
-    { id: 'auto-update', label: 'Otomatik Güncelleme', desc: 'Yeni güncelleme bulunduğunda arka planda otomatik indir ve kur', type: 'toggle', default: true },
-    { id: 'start-fullscreen', label: 'Tam Ekran Başlat', desc: 'Uygulama açıldığında otomatik olarak tam ekrana geç', type: 'toggle', default: false },
-    { id: 'default-browser', label: 'Varsayılan Tarayıcı Yap', desc: 'İşletim sisteminde varsayılan web tarayıcısı olarak ayarla', type: 'button-status', btnText: 'Varsayılan Ayarla', action: 'setDefaultBrowser', statusCheck: 'checkDefaultBrowser' },
-    { id: 'check-updates', label: 'Yazılım Güncellemeleri', desc: 'Uygulama güncellemelerini kontrol et ve yükle', type: 'button-status', btnText: 'Güncellemeleri Kontrol Et', action: 'checkAppUpdates', statusCheck: 'initAppVersionDisplay' },
-    { id: 'startup-page', label: 'Başlangıç Sayfası', desc: 'Tarayıcı açıldığında yüklenen sayfa', type: 'select', options: [{val: 'home', name: 'Hız Çubuğu (Ana Sayfa)'}, {val: 'blank', name: 'Boş Sayfa'}, {val: 'last', name: 'Önceki Oturumu Kurtar'}], default: 'home' },
-    { id: 'max-tabs', label: 'Maksimum Sekme Sayısı', desc: 'Aynı anda açık tutulabilecek sekme sayısı (En fazla 20)', type: 'number', min: 1, max: 20, placeholder: '10', default: '10' }
-],
+    genel: [
+        { id: 'notifications', label: 'Bildirimler', desc: 'Uygulama içi anlık bildirimlere izin ver', type: 'toggle', default: true },
+        { id: 'auto-save', label: 'Otomatik Kayıt', desc: 'Çalışma alanını, ayarları ve çizimleri otomatik olarak kaydet', type: 'toggle', default: true },
+        { id: 'start-fullscreen', label: 'Tam Ekran Başlat', desc: 'Uygulama açıldığında otomatik olarak tam ekrana geç', type: 'toggle', default: false },
+        { id: 'default-browser', label: 'Varsayılan Tarayıcı Yap', desc: 'İşletim sisteminde varsayılan web tarayıcısı olarak ayarla', type: 'button-status', btnText: 'Varsayılan Ayarla', action: 'setDefaultBrowser', statusCheck: 'checkDefaultBrowser' },
+        { id: 'check-updates', label: 'Yazılım Güncellemeleri', desc: 'Uygulama güncellemelerini kontrol et ve yükle', type: 'button-status', btnText: 'Güncellemeleri Kontrol Et', action: 'checkAppUpdates', statusCheck: 'initAppVersionDisplay' },
+        { id: 'startup-page', label: 'Başlangıç Sayfası', desc: 'Tarayıcı açıldığında yüklenen sayfa', type: 'select', options: [{val: 'home', name: 'Hız Çubuğu (Ana Sayfa)'}, {val: 'blank', name: 'Boş Sayfa'}, {val: 'last', name: 'Önceki Oturumu Kurtar'}, {val: 'dashboard', name: 'Özel Dashboard'}], default: 'home' },
+        { id: 'max-tabs', label: 'Maksimum Sekme Sayısı', desc: 'Aynı anda açık tutulabilecek sekme sayısı (En fazla 30)', type: 'number', min: 1, max: 30, placeholder: '10', default: '10' },
+        { id: 'drawing-recovery', label: 'Çizim Kurtarma', desc: 'Çizimleri PNG olarak kullanıcı verileri klasöründe sakla ve açılışta geri yükle', type: 'toggle', default: true },
+        { id: 'save-drawing-now', label: 'Çizimi Şimdi Kaydet', desc: 'Mevcut çizim yüzeyini anında kullanıcı verileri klasörüne kaydet', type: 'button', btnText: 'Kaydet', action: 'saveDrawingNow' },
+        { id: 'clear-drawing-now', label: 'Kayıtlı Çizimi Sil', desc: 'Kaydedilmiş çizim dosyasını ve mevcut çizim yüzeyini temizle', type: 'button', btnText: 'Temizle', action: 'clearDrawingNow' }
+    ],
     arama: [
         { id: 'search-engine', label: 'Arama Motoru', desc: 'Adres çubuğuna yazılan aramaların gönderileceği motor', type: 'select', options: [
-            {val:'google', name:'Google'}, {val:'yandex', name:'Yandex'}, {val:'bing', name:'Bing'}, {val:'duckduckgo', name:'DuckDuckGo'}, {val:'custom', name:'Özel (aşağıda tanımla)'}
+            {val:'google', name:'Google'}, {val:'yandex', name:'Yandex'}, {val:'bing', name:'Bing'}, {val:'duckduckgo', name:'DuckDuckGo'}, {val:'ecosia', name:'Ecosia'}, {val:'brave', name:'Brave Search'}, {val:'custom', name:'Özel (aşağıda tanımla)'}
         ], default: 'google' },
         { id: 'custom-search-url', label: 'Özel Arama Adresi', desc: `Sadece "Özel" seçiliyken kullanılır. %s aranan kelimenin yerine geçer.`, type: 'text', placeholder: 'https://ornek.com/ara?q=%s', default: 'https://www.google.com/search?q=%s' },
+        { id: 'search-suggestions', label: 'Arama Önerileri', desc: 'Adres çubuğuna yazarken otomatik tamamlama ve öneriler göster', type: 'toggle', default: true },
         { id: 'ai-mode-active', label: 'AI Modu', desc: 'Adres çubuğundaki aramaları yapay zekaya yönlendir', type: 'toggle', default: false },
         { id: 'ai-provider', label: 'AI Sağlayıcı', desc: 'AI Modu ve AI kısayolu için kullanılacak servis', type: 'select', options: [
-            {val:'google-ai', name:'Google AI Modu'}, {val:'chatgpt', name:'ChatGPT'}, {val:'gemini', name:'Gemini'}, {val:'perplexity', name:'Perplexity'}
+            {val:'google-ai', name:'Google AI Modu'}, {val:'chatgpt', name:'ChatGPT'}, {val:'gemini', name:'Gemini'}, {val:'perplexity', name:'Perplexity'}, {val:'claude', name:'Claude'}
         ], default: 'google-ai' }
     ],
     performans: [
@@ -175,18 +179,46 @@ genel: [
         { id: 'fps-meter', label: 'FPS Göstergesi', desc: 'Ekranın sağ üst köşesinde anlık kare hızını göster', type: 'toggle', default: false },
         { id: 'gpu-render', label: 'GPU Render', desc: 'Gelişmiş donanımsal çizim ve işleme motorunu etkinleştir', type: 'toggle', default: true },
         { id: 'smooth-scrolling', label: 'Akıcı Kaydırma', desc: 'Sayfa geçişlerinde ve kaydırmalarda yumuşak animasyonlar uygula', type: 'toggle', default: true },
-        { id: 'memory-saver', label: 'Bellek Tasarrufu', desc: 'Boştaki sekme belleklerini optimize ederek RAM kullanımını azalt', type: 'toggle', default: true }
+        { id: 'memory-saver', label: 'Bellek Tasarrufu', desc: 'Boştaki sekme belleklerini optimize ederek RAM kullanımını azalt', type: 'toggle', default: true },
+        { id: 'network-optimizer', label: 'Ağ İstek Optimizasyonu', desc: 'Veri paketlerini sıkıştırarak sayfa yüklenme sürelerini hızlandır', type: 'toggle', default: true }
     ],
     gizlilik: [
         { id: 'ad-block', label: 'Reklam Engelleyici', desc: 'Web sayfalarındaki rahatsız edici reklamları engelle', type: 'toggle', default: true },
         { id: 'track-protect', label: 'İzleyici Koruması', desc: 'Gizliliğinizi tehlikeye atan çerezleri ve izleyicileri engelle', type: 'toggle', default: true },
         { id: 'clear-cache-exit', label: 'Çıkışta Önbelleği Sil', desc: 'Uygulama kapatıldığında tüm çerezleri ve önbelleği temizle', type: 'toggle', default: false },
-        { id: 'do-not-track', label: 'Takip Etme İsteği', desc: 'Göz Atma trafiğinizi web sitelerinden gizleyin', type: 'toggle', default: true }
+        { id: 'do-not-track', label: 'Takip Etme İsteği', desc: 'Göz Atma trafiğinizi web sitelerinden gizleyin', type: 'toggle', default: true },
+        { id: 'https-only', label: 'Yalnızca HTTPS Modu', desc: 'Güvensiz HTTP bağlantılarını otomatik olarak güvenli sürüme yükselt', type: 'toggle', default: true },
+        { id: 'password-manager', label: 'Dahili Şifre Yöneticisi', desc: 'Site şifrelerini güvenli şekilde şifrelenmiş olarak sakla', type: 'toggle', default: true }
     ],
     gorunum: [
-        { id: 'dark-mode', label: 'Koyu Tema Modu', desc: 'Tüm arayüzde modern koyu tema renk paletini kullan', type: 'toggle', default: true },
+        { id: 'theme-preset', label: 'Tema Seçimi', desc: 'Arayüzün genel renk paletini ve atmosferini özelleştir', type: 'select', options: [
+            {val: 'dark', name: 'Modern Koyu (Zinc)'},
+            {val: 'light', name: 'Aydınlık Ferah'},
+            {val: 'catppuccin', name: 'Catppuccin Mocha'},
+            {val: 'cyberpunk', name: 'Cyberpunk Neon'},
+            {val: 'dracula', name: 'Dracula Pro'},
+            {val: 'nord', name: 'Nord Frost'},
+            {val: 'oled', name: 'OLED Saf Siyah'},
+            {val: 'emerald', name: 'Emerald Forest'}
+        ], default: 'dark' },
         { id: 'compact-tabs', label: 'Kompakt Sekmeler', desc: 'Sekme boyutlarını küçülterek daha fazla alan kazanın', type: 'toggle', default: false },
-        { id: 'ui-animations', label: 'Arayüz Animasyonları', desc: 'Pencere geçişleri ve menü açılmalarında akıcı efektler kullan', type: 'toggle', default: true }
+        { id: 'ui-animations', label: 'Arayüz Animasyonları', desc: 'Pencere geçişleri ve menü açılmalarında akıcı efektler kullan', type: 'toggle', default: true },
+        { id: 'font-scale', label: 'Yazı Boyutu Ölçeği', desc: 'Arayüz genelindeki metinlerin boyut yoğunluğu', type: 'select', options: [
+            {val: 'small', name: 'Küçük (%90)'},
+            {val: 'normal', name: 'Normal (%100)'},
+            {val: 'large', name: 'Büyük (%110)'}
+        ], default: 'normal' },
+        { id: 'ui-scale', label: 'Arayüz Ölçeği', desc: 'Küçük veya yüksek çözünürlüklü ekranlarda arayüz yoğunluğunu ayarla', type: 'select', options: [
+            {val: 'compact', name: 'Kompakt (%90)'}, {val: 'normal', name: 'Normal (%100)'}, {val: 'large', name: 'Büyük (%110)'}, {val: 'board', name: 'Akıllı Tahta (%125)'}
+        ], default: 'normal' },
+        { id: 'touch-mode', label: 'Dokunmatik Tahta Modu', desc: 'Dokunmatik ekranlar için butonları ve araç hedeflerini büyüt', type: 'toggle', default: true }
+    ],
+    gelismis: [
+        { id: 'dev-tools-shortcut', label: 'Geliştirici Araçları', desc: 'Uygulama içi konsol ve element denetleyicisini etkinleştir', type: 'toggle', default: true },
+        { id: 'hardware-acceleration-override', label: 'WebGL Zorla Etkinleştir', desc: 'Donanım kısıtlamalarını aşarak WebGL performansını zorla', type: 'toggle', default: false },
+        { id: 'cache-size-limit', label: 'Maksimum Önbellek Boyutu (MB)', desc: 'Disk üzerinde saklanacak maksimum önbellek sınırı', type: 'number', min: 100, max: 5000, placeholder: '500', default: '500' },
+        { id: 'export-settings-btn', label: 'Ayarları Dışa Aktar', desc: 'Tüm tercihlerinizi ve ayarlarınızı JSON dosyası olarak kaydedin', type: 'button', btnText: 'Dışa Aktar', action: 'exportSettingsData' },
+        { id: 'import-settings-btn', label: 'Ayarları İçe Aktar', desc: 'Daha önce kaydettiğiniz ayar dosyasını uygulamaya yükleyin', type: 'button', btnText: 'İçe Aktar', action: 'importSettingsData' }
     ]
 };
 
@@ -195,8 +227,10 @@ const settingsTitles = {
     arama: 'Arama ve AI', 
     performans: 'Performans', 
     gizlilik: 'Gizlilik ve Güvenlik', 
-    gorunum: 'Görünüm' 
+    gorunum: 'Görünüm',
+    gelismis: 'Gelişmiş'
 };
+
 
 function switchSettingsTab(cat, el) {
     const body = document.getElementById('settings-body');
@@ -224,9 +258,9 @@ function switchSettingsTab(cat, el) {
     for (let i = 0; i < len; i++) {
         const s = items[i];
         let val;
-        const stored = localStorage.getItem('set_' + s.id);
+        let stored = null;
 
-        if (stored !== null) {
+    if (stored !== null) {
             val = (s.type === 'select' || s.type === 'text' || s.type === 'number') ? stored : (stored === 'true');
         } else {
             val = s.default;
@@ -316,7 +350,9 @@ function switchSettingsTab(cat, el) {
 
 function saveSetting(id, val) {
     localStorage.setItem('set_' + id, val);
+    
     applySetting(id, val);
+    
     if (window.electronAPI && window.electronAPI.sendSettingUpdate) {
         window.electronAPI.sendSettingUpdate({ id, val });
     } else {
@@ -325,10 +361,22 @@ function saveSetting(id, val) {
             ipcRenderer.send('settings-update', { id, val });
         } catch(e) {}
     }
+    try {
+        const { ipcRenderer } = require('electron');
+        ipcRenderer.send('save-app-setting', { id, val });
+    } catch(e) {}
 }
 
 function executeSettingAction(action, btnEl) {
-    if (action === 'setDefaultBrowser') {
+    if (action === 'saveDrawingNow') {
+        if (typeof window.saveDrawingNow === 'function' && window.saveDrawingNow()) return;
+        if (typeof showToast === 'function') showToast('Çizim kaydedilemedi.', 'error');
+    } else if (action === 'clearDrawingNow') {
+        if (typeof window.clearCanvas === 'function') {
+            window.clearCanvas();
+            if (typeof showToast === 'function') showToast('Kayıtlı çizim temizlendi.');
+        }
+    } else if (action === 'setDefaultBrowser') {
         let sent = false;
         if (window.electronAPI && window.electronAPI.setAsDefaultBrowser) {
             window.electronAPI.setAsDefaultBrowser();
@@ -359,7 +407,6 @@ function executeSettingAction(action, btnEl) {
         }
         if (btnEl) btnEl.disabled = true;
 
-        // Zaman aşımı (Timeout) eklenerek 'Denetleniyor...' takılması engellendi
         clearTimeout(window._updateCheckTimeout);
         window._updateCheckTimeout = setTimeout(() => {
             const currentBadge = document.getElementById('status-check-updates');
@@ -371,7 +418,6 @@ function executeSettingAction(action, btnEl) {
             }
         }, 8000);
 
-        // Doğrudan updater.js tarafından dinlenen ana IPC kanalına istek gönderir
         if (window.electronAPI && window.electronAPI.checkManualUpdate) {
             window.electronAPI.checkManualUpdate();
         } else {
@@ -387,6 +433,47 @@ function executeSettingAction(action, btnEl) {
                 if (btnEl) btnEl.disabled = false;
             }
         }
+    } else if (action === 'exportSettingsData') {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('set_') || key === 'okul_modu')) {
+                data[key] = localStorage.getItem(key);
+            }
+        }
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ankaweb-settings.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        if (typeof showToast === 'function') showToast('Ayarlar başarıyla dışa aktarıldı.');
+    } else if (action === 'importSettingsData') {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = JSON.parse(event.target.result);
+                    for (const key in data) {
+                        if (key.startsWith('set_') || key === 'okul_modu') {
+                            localStorage.setItem(key, data[key]);
+                        }
+                    }
+                    if (typeof showToast === 'function') showToast('Ayarlar yüklendi, yeniden başlatılıyor...');
+                    setTimeout(() => location.reload(), 1000);
+                } catch (err) {
+                    if (typeof showToast === 'function') showToast('Geçersiz ayar dosyası!', 'error');
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
     }
 }
 
@@ -443,9 +530,7 @@ function initAppVersionDisplay() {
                 }
             }
         }
-    } catch (e) {
-        console.error('package.json okunurken hata oluştu:', e);
-    }
+    } catch (e) {}
 
     badge.textContent = `Güncel (${ver})`;
     badge.className = 'settings-status ok';
@@ -564,10 +649,42 @@ function applySetting(id, val) {
     } else if (id === 'ai-mode-active') {
         const btn = document.getElementById('ai-mode-btn');
         if (btn) btn.classList.toggle('active', boolVal);
-    } else if (id === 'dark-mode') {
-        document.body.classList.toggle('light-theme', !boolVal);
+    } else if (id === 'theme-preset') {
+        document.body.classList.remove('light-theme', 'theme-catppuccin', 'theme-cyberpunk', 'theme-dracula', 'theme-nord', 'theme-oled', 'theme-emerald');
+        document.documentElement.dataset.themePreset = val || 'dark';
+        if (val === 'light') {
+            document.body.classList.add('light-theme');
+        } else if (val !== 'dark') {
+            document.body.classList.add('theme-' + val);
+        }
     } else if (id === 'smooth-scrolling') {
         document.documentElement.style.scrollBehavior = boolVal ? 'smooth' : 'auto';
+    } else if (id === 'font-scale') {
+        document.documentElement.dataset.fontScale = val || 'normal';
+        document.documentElement.style.fontSize = val === 'small' ? '14px' : val === 'large' ? '17px' : '16px';
+    } else if (id === 'ui-scale') {
+        document.documentElement.dataset.uiScale = val || 'normal';
+    } else if (id === 'touch-mode') {
+        document.body.classList.toggle('touch-mode', boolVal);
+        document.documentElement.classList.toggle('touch-mode', boolVal);
+    } else if (id === 'compact-tabs') {
+        document.documentElement.classList.toggle('compact-tabs', boolVal);
+    } else if (id === 'notifications') {
+        document.documentElement.dataset.notifications = boolVal ? 'on' : 'off';
+    } else if (id === 'search-suggestions') {
+        document.documentElement.dataset.searchSuggestions = boolVal ? 'on' : 'off';
+    } else if (id === 'ui-animations') {
+        let animStyle = document.getElementById('no-animations-style');
+        if (!boolVal) {
+            if (!animStyle) {
+                animStyle = document.createElement('style');
+                animStyle.id = 'no-animations-style';
+                animStyle.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }';
+                document.head.appendChild(animStyle);
+            }
+        } else {
+            if (animStyle) animStyle.remove();
+        }
     }
 }
 
@@ -577,7 +694,7 @@ function applyStoredSettings() {
         const items = settingsData[categories[c]];
         for (let i = 0; i < items.length; i++) {
             const s = items[i];
-            const stored = localStorage.getItem('set_' + s.id);
+            let stored = localStorage.getItem('set_' + s.id);
             const val = stored !== null ? stored : s.default;
             applySetting(s.id, val);
         }
@@ -592,6 +709,10 @@ function resetSettings() {
             localStorage.removeItem('set_' + items[i].id);
         }
     }
+    try {
+        const { ipcRenderer } = require('electron');
+        ipcRenderer.send('reset-app-settings');
+    } catch(e) {}
     if (typeof showToast === 'function') showToast('Ayarlar sıfırlandı.');
     setTimeout(() => location.reload(), 500);
 }
@@ -621,4 +742,20 @@ function toggleSettings() {
     }
 }
 
-applyStoredSettings();
+async function hydrateStoredSettings() {
+    try {
+        const { ipcRenderer } = require('electron');
+        const state = await ipcRenderer.invoke('load-app-state');
+        const settings = state && state.settings ? state.settings : {};
+        Object.keys(settings).forEach((id) => {
+            localStorage.setItem('set_' + id, settings[id]);
+        });
+    } catch(e) {}
+    if (localStorage.getItem('set_touch-mode-migrated') !== 'true') {
+        localStorage.setItem('set_touch-mode-migrated', 'true');
+        saveSetting('touch-mode', 'true');
+    }
+    applyStoredSettings();
+}
+
+hydrateStoredSettings();
